@@ -1,6 +1,6 @@
 {
   "name": "natl-desktop",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "description": "NATL — record a path through your app, get a YAML test you can run here or in CI",
   "main": "electron/main.js",
   "private": true,

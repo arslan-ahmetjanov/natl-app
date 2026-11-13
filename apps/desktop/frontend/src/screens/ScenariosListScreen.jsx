@@ -21,7 +21,6 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 
 /** Экран списка: все сценарии рабочей папки. */
 export default function ScenariosListScreen({ onOpen, onRecord, refreshToken = 0 }) {
-  const theme = useTheme();
   const [scenarios, setScenarios] = useState([]);
   const [error, setError] = useState(null);
   const [query, setQuery] = useState('');
