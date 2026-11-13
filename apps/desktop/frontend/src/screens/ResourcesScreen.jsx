@@ -251,7 +251,10 @@ export default function ResourcesScreen() {
   };
 
   const copySnippet = async (actionName) => {
-    const snippet = `imports:\n  - ${active.relativePath}\nsteps:\n  - do: ${baseName}.${actionName}`;
+    // Сценарий лежит в tests/, ресурс — в pages/: путь пишем от сценария.
+    // Ссылка вида `pages/login.yaml` из tests/ ведёт в tests/pages/ и не находится.
+    const fileName = String(active.relativePath || '').split('/').pop();
+    const snippet = `imports:\n  - ../pages/${fileName}\nsteps:\n  - do: ${baseName}.${actionName}`;
     await navigator.clipboard.writeText(snippet);
     setCopied(actionName);
     setTimeout(() => setCopied(null), 1500);
