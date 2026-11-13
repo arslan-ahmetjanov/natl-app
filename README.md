@@ -125,7 +125,13 @@ steps:
 | `apps/desktop/` | NATL desktop app: record clicks, save YAML, watch the run |
 | `examples/`, `docs/`, `brand/` | examples, docs site, brand assets |
 
-The desktop app is the product: **Postman for UI**. Tests stay plain YAML files in the user's repository, so the same scenario runs in the app and in CI via `natl run`. MVP scope and boundaries: [`docs/design/2026-11-13-mvp.md`](./docs/design/2026-11-13-mvp.md).
+The desktop app is the product: **Postman for UI**. Tests stay plain YAML files in the user's repository, so the same scenario runs in the app and in CI via `natl run`.
+
+Design docs:
+
+- [`docs/design/2026-11-13-product.md`](./docs/design/2026-11-13-product.md) — positioning, USP, metrics, architecture.
+- [`docs/design/2026-11-13-mvp.md`](./docs/design/2026-11-13-mvp.md) — MVP scope and boundaries.
+- [`docs/adr/`](./docs/adr/) — decisions worth remembering.
 
 ## Contributing
 
