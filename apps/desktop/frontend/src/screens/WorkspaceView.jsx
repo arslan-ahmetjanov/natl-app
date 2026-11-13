@@ -13,23 +13,25 @@ import {
 } from '@mui/material';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import BugReportIcon from '@mui/icons-material/BugReport';
-import CloseIcon from '@mui/icons-material/Close';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import HomeIcon from '@mui/icons-material/Home';
 import LightModeIcon from '@mui/icons-material/LightMode';
+import SettingsIcon from '@mui/icons-material/Settings';
+import LlmSettingsDialog from '../components/LlmSettingsDialog';
 import RecordScenarioDialog from '../components/RecordScenarioDialog';
 import LogsScreen from './LogsScreen';
-import ScenariosScreen from './ScenariosScreen';
+import ScenarioScreen from './ScenarioScreen';
+import ScenariosListScreen from './ScenariosListScreen';
 
 /**
- * The workspace shell.
+ * Оболочка рабочей папки.
  *
- * Three things only: scenarios, their run results and the log. Everything the
- * old app called "authoring" — pages, elements, API bases, shared steps — is
- * gone from the interface. A scenario is a file, so the app does not need a
- * model of the test on top of it.
+ * Экраны разделены: список сценариев, отдельный сценарий, журнал.
+ * Боковую панель можно свернуть, чтобы отдать место редактору.
  */
 export default function WorkspaceView({
   workspacePath,
@@ -40,18 +42,24 @@ export default function WorkspaceView({
   onOpenFolder,
   onCloseWorkspace,
 }) {
-  const [view, setView] = useState('scenarios'); // 'scenarios' | 'logs'
+  const [view, setView] = useState('scenarios');
+  const [selected, setSelected] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [recordOpen, setRecordOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [refreshToken, setRefreshToken] = useState(0);
 
-  const navItem = (icon, label, selected, onClick) => (
-    <ListItemButton
-      selected={selected}
-      onClick={onClick}
-      sx={{ borderRadius: 1, mb: 0.25 }}
-    >
+  const openScenario = (relativePath, title) => {
+    setSelected({ relativePath, title });
+    setView('scenario');
+  };
+
+  const navItem = (icon, label, active, onClick) => (
+    <ListItemButton selected={active} onClick={onClick} sx={{ borderRadius: 1, mb: 0.25 }}>
       <ListItemIcon sx={{ minWidth: 32 }}>{icon}</ListItemIcon>
-      <ListItemText primary={label} primaryTypographyProps={{ fontSize: 14 }} />
+      {sidebarOpen && (
+        <ListItemText primary={label} primaryTypographyProps={{ fontSize: 14 }} />
+      )}
     </ListItemButton>
   );
 
@@ -71,14 +79,10 @@ export default function WorkspaceView({
           bgcolor: 'background.paper',
         }}
       >
-        <Typography variant="subtitle2" sx={{ fontWeight: 700, letterSpacing: '0.06em' }}>
-          NATL
-        </Typography>
-        <Typography variant="body2" sx={{ color: 'text.secondary', ml: 1 }}>
-          {workspace?.title || 'Workspace'}
+        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+          {workspace?.title || workspacePath}
         </Typography>
         <Box sx={{ flex: 1 }} />
-
         <Button
           size="small"
           startIcon={<FiberManualRecordIcon />}
@@ -87,17 +91,21 @@ export default function WorkspaceView({
         >
           Record
         </Button>
-
+        <Tooltip title="Настройки ИИ">
+          <IconButton size="small" onClick={() => setSettingsOpen(true)} aria-label="Настройки ИИ">
+            <SettingsIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
         {onToggleTheme && (
-          <Tooltip title={themeMode === 'dark' ? 'Light theme' : 'Dark theme'}>
-            <IconButton size="small" onClick={onToggleTheme} sx={{ color: 'text.secondary' }}>
+          <Tooltip title={themeMode === 'dark' ? 'Светлая тема' : 'Тёмная тема'}>
+            <IconButton size="small" onClick={onToggleTheme} aria-label="Переключить тему">
               {themeMode === 'dark' ? <LightModeIcon fontSize="small" /> : <DarkModeIcon fontSize="small" />}
             </IconButton>
           </Tooltip>
         )}
         {onCloseWorkspace && (
-          <Tooltip title="Close workspace">
-            <IconButton size="small" onClick={onCloseWorkspace} sx={{ color: 'text.secondary' }}>
+          <Tooltip title="Закрыть рабочую папку">
+            <IconButton size="small" onClick={onCloseWorkspace} aria-label="Закрыть рабочую папку">
               <HomeIcon fontSize="small" />
             </IconButton>
           </Tooltip>
@@ -109,7 +117,7 @@ export default function WorkspaceView({
           square
           elevation={0}
           sx={{
-            width: 220,
+            width: sidebarOpen ? 220 : 56,
             flexShrink: 0,
             borderRight: '1px solid',
             borderColor: 'divider',
@@ -117,40 +125,66 @@ export default function WorkspaceView({
             display: 'flex',
             flexDirection: 'column',
             p: 1,
+            transition: 'width 120ms ease',
+            overflow: 'hidden',
           }}
         >
-          <Typography variant="caption" sx={{ color: 'text.secondary', px: 1, py: 0.5 }}>
-            {workspacePath ? workspacePath.split(/[\\/]/).pop() : 'Workspace'}
-          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <Tooltip title={sidebarOpen ? 'Свернуть' : 'Развернуть'}>
+              <IconButton
+                size="small"
+                onClick={() => setSidebarOpen((prev) => !prev)}
+                aria-label={sidebarOpen ? 'Свернуть панель' : 'Развернуть панель'}
+              >
+                {sidebarOpen ? <ChevronLeftIcon fontSize="small" /> : <ChevronRightIcon fontSize="small" />}
+              </IconButton>
+            </Tooltip>
+          </Box>
+
           <List dense disablePadding>
-            {navItem(<AccountTreeIcon fontSize="small" />, 'Scenarios', view === 'scenarios', () => setView('scenarios'))}
-            {navItem(<BugReportIcon fontSize="small" />, 'Logs', view === 'logs', () => setView('logs'))}
+            {navItem(<AccountTreeIcon fontSize="small" />, 'Сценарии', view === 'scenarios' || view === 'scenario', () => {
+              setView('scenarios');
+              setSelected(null);
+            })}
+            {navItem(<BugReportIcon fontSize="small" />, 'Журнал', view === 'logs', () => setView('logs'))}
           </List>
 
           <Box sx={{ flex: 1 }} />
 
-          <Tooltip title="Open another folder">
+          <Tooltip title="Открыть другую папку">
             <Button
               size="small"
-              startIcon={<FolderOpenIcon />}
+              startIcon={sidebarOpen ? <FolderOpenIcon /> : undefined}
               onClick={async () => {
                 if (!window.electronAPI || !onOpenFolder) return;
                 const path = await window.electronAPI.openFolder();
                 if (path) onOpenFolder(path);
               }}
-              sx={{ justifyContent: 'flex-start', color: 'text.secondary' }}
+              sx={{ justifyContent: 'flex-start', color: 'text.secondary', minWidth: 0 }}
             >
-              Open folder
+              {sidebarOpen ? 'Открыть папку' : <FolderOpenIcon fontSize="small" />}
             </Button>
           </Tooltip>
         </Paper>
 
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
           {view === 'scenarios' && (
-            <ScenariosScreen
-              workspacePath={workspacePath}
-              refreshToken={refreshToken}
+            <ScenariosListScreen
+              onOpen={openScenario}
               onRecord={() => setRecordOpen(true)}
+              refreshToken={refreshToken}
+            />
+          )}
+          {view === 'scenario' && selected && (
+            <ScenarioScreen
+              relativePath={selected.relativePath}
+              title={selected.title}
+              workspacePath={workspacePath}
+              onBack={() => {
+                setView('scenarios');
+                setSelected(null);
+              }}
+              onOpenSettings={() => setSettingsOpen(true)}
             />
           )}
           {view === 'logs' && <LogsScreen />}
@@ -165,6 +199,7 @@ export default function WorkspaceView({
           if (onRefresh) onRefresh();
         }}
       />
+      <LlmSettingsDialog open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </Box>
   );
 }

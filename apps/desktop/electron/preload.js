@@ -104,6 +104,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   natlListScenarios: () => ipcRenderer.invoke('natl:listScenarios'),
   natlReadScenario: (relativePath) => ipcRenderer.invoke('natl:readScenario', relativePath),
   natlWriteScenario: (payload) => ipcRenderer.invoke('natl:writeScenario', payload || {}),
+  aiGenerateSteps: (payload) => ipcRenderer.invoke('ai:generateSteps', payload || {}),
   onNatlRecordProgress: (cb) => {
     const fn = (_, payload) => cb(payload);
     ipcRenderer.on('main:natl-record-progress', fn);

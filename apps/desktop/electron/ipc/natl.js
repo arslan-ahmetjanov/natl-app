@@ -2,14 +2,16 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
-const { ipcMain } = require('electron');
+const { app, ipcMain } = require('electron');
 
 const filestore = require('../store/filestore');
+const llmConfig = require('../store/llmConfig');
 const store = require('../natl/store');
 const { saveScenario } = require('../natl/save');
 const { runScenario, assertInsideWorkspace } = require('../natl/run');
 const { startRecording } = require('../natl/recorder');
 const { scenarioSummary } = require('../natl/scenario');
+const { generateSteps } = require('../natl/ai');
 const { getStore } = require('./logs');
 
 /** One recorder at a time: a second browser would fight the first for events. */
@@ -49,8 +51,7 @@ function registerNatlIpc() {
     return store.readScenario(resolved);
   });
 
-  ipcMain.handle('natl:writeScenario', async (_, payload = {}) => {
-    const root = currentRoot();
+  ipcMain.handle('natl:writeScenario', async (_, payload = {}) => {    const root = currentRoot();
     const { relativePath, text } = payload;
     if (typeof text !== 'string') throw new Error('Нет текста сценария');
     const resolved = assertInsideWorkspace(root, path.join(root, relativePath));
@@ -177,6 +178,31 @@ function registerNatlIpc() {
       fileName,
       relativePath: path.relative(root, filePath).split(path.sep).join('/'),
     };
+  });
+
+  // AI: the key never leaves the main process, the renderer only sends a prompt.
+  ipcMain.handle('ai:generateSteps', async (_, payload = {}) => {
+    const root = currentRoot();
+    const userData = app.getPath('userData');
+    const details = llmConfig.getEffectiveConfigDetails(userData, root);
+
+    try {
+      const result = await generateSteps({
+        description: payload.description,
+        currentYaml: payload.yaml,
+        config: details.values,
+      });
+      getStore().info('ai', `предложено шагов: ${result.steps.length}`, {
+        rejected: result.rejected.length,
+        model: details.values.modelName,
+      });
+      return result;
+    } catch (err) {
+      getStore().error('ai', `генерация не удалась: ${err && err.message ? err.message : err}`, {
+        stack: err && err.stack,
+      });
+      throw err;
+    }
   });
 }
 
