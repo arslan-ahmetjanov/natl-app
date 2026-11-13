@@ -25,11 +25,9 @@ import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import FolderIcon from '@mui/icons-material/Folder';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import WindowControls from '../components/WindowControls';
-import BrandSwitcher from '../components/BrandSwitcher';
-import { brandById } from '../themes';
 
 /** Экран входа: одно окно, три действия, недавние папки. */
-export default function WelcomeScreen({ onOpen, themeMode, onToggleTheme, brand, onBrandChange }) {
+export default function WelcomeScreen({ onOpen, themeMode, onToggleTheme }) {
   const [recent, setRecent] = useState([]);
   const [cloneOpen, setCloneOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
@@ -124,28 +122,25 @@ export default function WelcomeScreen({ onOpen, themeMode, onToggleTheme, brand,
       <WindowControls
         title="NATL"
         right={(
-          <>
-            {onBrandChange && <BrandSwitcher brand={brand} onChange={onBrandChange} />}
-            <Tooltip title={themeMode === 'dark' ? 'Светлая тема' : 'Тёмная тема'}>
-              <Box component="span">
-                <Button
-                  size="small"
-                  onClick={onToggleTheme}
-                  startIcon={themeMode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
-                  sx={{ color: 'text.secondary' }}
-                >
-                  {themeMode === 'dark' ? 'Светлая' : 'Тёмная'}
-                </Button>
-              </Box>
-            </Tooltip>
-          </>
+          <Tooltip title={themeMode === 'dark' ? 'Светлая тема' : 'Тёмная тема'}>
+            <Box component="span">
+              <Button
+                size="small"
+                onClick={onToggleTheme}
+                startIcon={themeMode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
+                sx={{ color: 'text.secondary' }}
+              >
+                {themeMode === 'dark' ? 'Светлая' : 'Тёмная'}
+              </Button>
+            </Box>
+          </Tooltip>
         )}
       />
 
       <Box sx={{ flex: 1, overflow: 'auto', display: 'flex', justifyContent: 'center', px: 2, py: 6 }}>
         <Box sx={{ width: '100%', maxWidth: 760 }}>
           <Typography sx={{ fontFamily: 'IBM Plex Mono, monospace', fontWeight: 700, letterSpacing: '0.14em', color: 'primary.main' }}>
-            NATL IDE · {brandById(brand).name}
+            NATL IDE · Полигон
           </Typography>
           <Typography variant="h4" sx={{ mt: 1.5, mb: 1, maxWidth: 620 }}>
             Проверяйте поведение приложения, а не код

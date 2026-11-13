@@ -1,12 +1,38 @@
-import { Alert, Box, Typography } from '@mui/material';
+import { Alert, Box, Paper, Typography } from '@mui/material';
 import { describeScenario } from '../utils/describe';
 
 /** Человеческий вид сценария: фразы вместо YAML. */
 export default function ScenarioSteps({ text }) {
   const { name, items, error } = describeScenario(text);
 
+  // Битый YAML не должен скрывать код: показываем и предупреждение, и сам текст,
+  // как редактор, который не прячет файл из-за ошибки разбора.
   if (error) {
-    return <Alert severity="warning" sx={{ m: 2 }}>Не удалось прочитать сценарий: {error}</Alert>;
+    return (
+      <Box sx={{ p: 2 }}>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          YAML не разбирается: {error}
+        </Alert>
+        <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1 }}>
+          Ниже — файл как есть. Исправьте ошибку в режиме YAML, фразы появятся снова.
+        </Typography>
+        <Paper
+          component="pre"
+          sx={{
+            p: 2,
+            m: 0,
+            fontFamily: 'IBM Plex Mono, ui-monospace, monospace',
+            fontSize: 12,
+            lineHeight: 1.55,
+            whiteSpace: 'pre-wrap',
+            overflow: 'auto',
+            maxHeight: '60vh',
+          }}
+        >
+          {text}
+        </Paper>
+      </Box>
+    );
   }
 
   return (
@@ -18,7 +44,7 @@ export default function ScenarioSteps({ text }) {
 
       {items.length === 0 && (
         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-          Шагов пока нет. Добавьте первый через «Добавить шаг» или запишите действия.
+          Шагов пока нет. Добавьте первый через «Шаг» или запишите действия.
         </Typography>
       )}
 

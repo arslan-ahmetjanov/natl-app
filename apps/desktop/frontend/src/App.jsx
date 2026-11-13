@@ -8,7 +8,7 @@ import { DEFAULT_BRAND, paletteFor } from './themes';
 const WorkspaceView = lazy(() => import('./screens/WorkspaceView'));
 
 const THEME_STORAGE_KEY = 'natl-theme';
-const BRAND_STORAGE_KEY = 'natl-brand';
+const BRAND = DEFAULT_BRAND;
 
 function brandComponents(palette) {
   const radius = palette.radius;
@@ -109,20 +109,13 @@ function getInitialThemeMode() {
   return 'dark';
 }
 
-function getInitialBrand() {
-  if (typeof window === 'undefined') return DEFAULT_BRAND;
-  const stored = localStorage.getItem(BRAND_STORAGE_KEY);
-  return stored || DEFAULT_BRAND;
-}
-
 export default function App() {
   const [themeMode, setThemeMode] = useState(getInitialThemeMode);
-  const [brand, setBrand] = useState(getInitialBrand);
   const [workspacePath, setWorkspacePath] = useState(null);
   const [workspace, setWorkspace] = useState(null);
 
   const isElectron = typeof window !== 'undefined' && window.electronAPI;
-  const theme = useMemo(() => createNatlTheme(brand, themeMode), [brand, themeMode]);
+  const theme = useMemo(() => createNatlTheme(BRAND, themeMode), [themeMode]);
 
   const handleToggleTheme = () => {
     setThemeMode((prev) => {
@@ -136,21 +129,12 @@ export default function App() {
     });
   };
 
-  const handleBrandChange = (next) => {
-    setBrand(next);
-    try {
-      localStorage.setItem(BRAND_STORAGE_KEY, next);
-    } catch {
-      /* бренд не критичен */
-    }
-  };
-
   useEffect(() => {
     if (document.documentElement) {
       document.documentElement.setAttribute('data-theme', themeMode);
-      document.documentElement.setAttribute('data-brand', brand);
+      document.documentElement.setAttribute('data-brand', BRAND);
     }
-  }, [themeMode, brand]);
+  }, [themeMode]);
 
   useEffect(() => {
     if (!isElectron) return;
@@ -199,8 +183,6 @@ export default function App() {
           onOpen={handleOpenFolder}
           themeMode={themeMode}
           onToggleTheme={handleToggleTheme}
-          brand={brand}
-          onBrandChange={handleBrandChange}
         />
       ) : (
         <Suspense
@@ -215,8 +197,6 @@ export default function App() {
             workspace={workspace}
             themeMode={themeMode}
             onToggleTheme={handleToggleTheme}
-            brand={brand}
-            onBrandChange={handleBrandChange}
             onRefresh={() => window.electronAPI.getWorkspaceMeta().then(setWorkspace)}
             onOpenFolder={handleOpenFolder}
             onCloseWorkspace={handleCloseWorkspace}

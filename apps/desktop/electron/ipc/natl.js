@@ -55,14 +55,27 @@ function registerNatlIpc() {
     return store.readScenario(resolved);
   });
 
-  ipcMain.handle('natl:writeScenario', async (_, payload = {}) => {    const root = currentRoot();
+  ipcMain.handle('natl:writeScenario', async (_, payload = {}) => {
+    const root = currentRoot();
     const { relativePath, text } = payload;
     if (typeof text !== 'string') throw new Error('Нет текста сценария');
     const resolved = assertInsideWorkspace(root, path.join(root, relativePath));
     if (!store.isScenarioFile(resolved)) throw new Error('Это не файл сценария');
 
+    // Сохраняем как в IDE: даже невалидный текст пишется на диск, иначе правка
+    // теряется. Если YAML не разбирается, предыдущая версия остаётся в .bak.
+    const check = lintYaml(text);
+    const broken = check.issues.some((issue) => /YAML не разбирается/.test(issue.message));
+    if (broken) {
+      try {
+        fs.copyFileSync(resolved, `${resolved}.bak`);
+      } catch {
+        /* бэкап не обязателен: файла могло ещё не быть */
+      }
+    }
+
     store.writeScenario(resolved, text);
-    return { relativePath, savedAt: new Date().toISOString() };
+    return { relativePath, savedAt: new Date().toISOString(), backup: broken };
   });
 
   ipcMain.handle('natl:saveScenario', async (_, testId, options = {}) => {
