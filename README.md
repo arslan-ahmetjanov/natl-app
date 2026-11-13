@@ -125,7 +125,7 @@ steps:
 | `apps/desktop/` | NATL desktop app: record clicks, save YAML, watch the run |
 | `examples/`, `docs/`, `brand/` | examples, docs site, brand assets |
 
-The desktop app is the product: **Postman for UI**. Tests stay plain YAML files in the user's repository, so the same scenario runs in the app and in CI via `natl run`.
+The desktop app is the product: **self-service testing for teams without a QA resource**. Record a path through the app, get a YAML scenario in your repository, run it in the app or in CI via `natl run`. No cloud, no account, nothing leaves the machine.
 
 Design docs:
 

@@ -8,6 +8,7 @@
     "postinstall": "playwright install chromium",
     "start": "electron .",
     "dev": "electron .",
+    "test:natl": "node --test electron/natl/convert.test.js electron/natl/store.test.js",
     "dev:vite": "cd frontend && npm run dev",
     "dev:electron": "cross-env ELECTRON_START_URL=http://localhost:5173 electron .",
     "dev:full": "concurrently -k \"npm run dev:vite\" \"wait-on http://localhost:5173 && cross-env ELECTRON_START_URL=http://localhost:5173 electron .\"",
