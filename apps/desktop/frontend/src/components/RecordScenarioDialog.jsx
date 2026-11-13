@@ -28,6 +28,7 @@ export default function RecordScenarioDialog({ open, onClose, onSaved }) {
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
   const [name, setName] = useState('Recorded scenario');
+  const [savedName, setSavedName] = useState('');
   const [saving, setSaving] = useState(false);
   const [savedPath, setSavedPath] = useState(null);
 
@@ -47,6 +48,19 @@ export default function RecordScenarioDialog({ open, onClose, onSaved }) {
     setResult(null);
     setSaving(false);
     setSavedPath(null);
+    setSavedName('');
+  };
+
+  /** File name from the recorded site and time: readable and unique enough. */
+  const autoNameFor = (value) => {
+    let host = 'scenario';
+    try {
+      host = new URL(value).hostname.replace(/^www\./, '');
+    } catch {
+      /* keep the fallback */
+    }
+    const time = new Date().toTimeString().slice(0, 5).replace(':', '');
+    return `${host}-${time}`.replace(/[^a-zа-я0-9-]+/gi, '-');
   };
 
   const handleStart = async () => {
@@ -68,19 +82,29 @@ export default function RecordScenarioDialog({ open, onClose, onSaved }) {
       const recorded = await window.electronAPI.natlRecordStop({ name });
       setResult(recorded);
       setRunning(false);
+
+      // Autosave: a recorded scenario that has to be saved by hand is a step
+      // the user will forget. The file appears in the repository immediately.
+      const autoName = autoNameFor(url);
+      setName(autoName);
+      setSavedName(autoName);
+      const saved = await window.electronAPI.natlSaveRecorded({ yaml: recorded.yaml, name: autoName });
+      setSavedPath(saved.relativePath);
+      if (onSaved) onSaved(saved);
     } catch (err) {
       setRunning(false);
       setError(err && err.message ? err.message : String(err));
     }
   };
 
-  const handleSave = async () => {
+  const handleSaveCopy = async () => {
     if (!result) return;
     setSaving(true);
     setError(null);
     try {
       const saved = await window.electronAPI.natlSaveRecorded({ yaml: result.yaml, name });
       setSavedPath(saved.relativePath);
+      setSavedName(name);
       if (onSaved) onSaved(saved);
     } catch (err) {
       setError(err && err.message ? err.message : String(err));
@@ -164,6 +188,7 @@ export default function RecordScenarioDialog({ open, onClose, onSaved }) {
               onChange={(event) => setName(event.target.value)}
               size="small"
               fullWidth
+              helperText="Сценарий уже сохранён. Измените имя, чтобы сохранить копию."
             />
             {savedPath && (
               <Alert severity="success" sx={{ mt: 2 }}>
@@ -178,9 +203,9 @@ export default function RecordScenarioDialog({ open, onClose, onSaved }) {
         {running && (
           <Button variant="contained" color="warning" onClick={handleStop}>Stop</Button>
         )}
-        {result && !savedPath && (
-          <Button variant="contained" onClick={handleSave} disabled={saving || !name.trim()}>
-            {saving ? 'Saving…' : 'Save scenario'}
+        {result && savedName && name.trim() !== savedName.trim() && (
+          <Button variant="outlined" onClick={handleSaveCopy} disabled={saving || !name.trim()}>
+            {saving ? 'Saving…' : 'Save as copy'}
           </Button>
         )}
       </DialogActions>

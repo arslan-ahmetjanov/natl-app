@@ -38,6 +38,7 @@ import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import BugReportIcon from '@mui/icons-material/BugReport';
 import RecordScenarioDialog from '../components/RecordScenarioDialog';
 import LogsScreen from './LogsScreen';
+import ScenariosScreen from './ScenariosScreen';
 import HomeIcon from '@mui/icons-material/Home';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
@@ -77,6 +78,7 @@ export default function WorkspaceView({ workspacePath, workspace, pages, themeMo
   const [reportId, setReportId] = useState(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [recordOpen, setRecordOpen] = useState(false);
+  const [recordRefreshToken, setRecordRefreshToken] = useState(0);
   const [llmConfig, setLlmConfig] = useState({ global: {}, effective: {}, isValid: false });
   const [llmForm, setLlmForm] = useState({ apiKey: '', modelName: '', apiBaseUrl: '' });
   const [llmSaving, setLlmSaving] = useState(false);
@@ -376,9 +378,6 @@ export default function WorkspaceView({ workspacePath, workspace, pages, themeMo
       <Button size="small" startIcon={<AccountTreeIcon />} onClick={() => { setView('git'); clearSubSelection(); }} sx={{ color: 'text.primary' }}>
         Git
       </Button>
-      <Button size="small" startIcon={<AutoAwesomeIcon />} onClick={() => { setView('ai'); clearSubSelection(); }} sx={{ color: 'text.primary' }}>
-        AI
-      </Button>
     </Paper>
   );
 
@@ -429,47 +428,22 @@ export default function WorkspaceView({ workspacePath, workspace, pages, themeMo
         </IconButton>
       </Box>
       <List dense disablePadding sx={{ mt: 1 }}>
-        <SectionLabel sx={{ mt: 0, mb: 0.5, px: 0.5 }}>Authoring</SectionLabel>
-        {navItem(<SearchIcon fontSize="small" />, 'Tests', view === 'tests' || view === 'test', () => {
-          setView('tests');
-          clearSubSelection();
-        })}
-        {navItem(<DescriptionIcon fontSize="small" />, 'Pages', view === 'page', () => {
-          setView('page');
-          clearSubSelection();
-        })}
-        {navItem(<AllInclusiveIcon fontSize="small" />, 'Shared Steps', view === 'sharedSteps', () => {
-          setView('sharedSteps');
-          clearSubSelection();
-        })}
-        {navItem(<ApiIcon fontSize="small" />, 'API Bases', view === 'apiBases' || view === 'apiBase', () => {
-          setView('apiBases');
-          clearSubSelection();
-        })}
-        <SectionLabel sx={{ mt: 1.5, mb: 0.5, px: 0.5 }}>Run</SectionLabel>
-        {navItem(<PlayArrowIcon fontSize="small" />, 'Run tests', view === 'run', () => {
-          setView('run');
-          clearSubSelection();
-        })}
-        {navItem(<AssessmentIcon fontSize="small" />, 'Reports', view === 'report', () => {
-          setView('report');
-          clearSubSelection();
-        })}
-        <SectionLabel sx={{ mt: 1.5, mb: 0.5, px: 0.5 }}>Project</SectionLabel>
-        {navItem(<DataObjectIcon fontSize="small" />, 'Variables', view === 'variables', () => {
-          setView('variables');
-          clearSubSelection();
-        })}
-        {navItem(<AccountTreeIcon fontSize="small" />, 'Git', view === 'git', () => {
-          setView('git');
-          clearSubSelection();
-        })}
-        {navItem(<AutoAwesomeIcon fontSize="small" />, 'AI Generate', view === 'ai', () => {
-          setView('ai');
+        <SectionLabel sx={{ mt: 0, mb: 0.5, px: 0.5 }}>Work</SectionLabel>
+        {navItem(<SearchIcon fontSize="small" />, 'Scenarios', view === 'list', () => {
+          setView('list');
           clearSubSelection();
         })}
         {navItem(<BugReportIcon fontSize="small" />, 'Logs', view === 'logs', () => {
           setView('logs');
+          clearSubSelection();
+        })}
+        <SectionLabel sx={{ mt: 1.5, mb: 0.5, px: 0.5 }}>Legacy</SectionLabel>
+        {navItem(<PlayArrowIcon fontSize="small" />, 'JSON tests', view === 'tests' || view === 'test', () => {
+          setView('tests');
+          clearSubSelection();
+        })}
+        {navItem(<AssessmentIcon fontSize="small" />, 'Reports', view === 'report', () => {
+          setView('report');
           clearSubSelection();
         })}
       </List>
@@ -479,6 +453,13 @@ export default function WorkspaceView({ workspacePath, workspace, pages, themeMo
   const workspaceContent = (
     <>
           {view === 'list' && (
+            <ScenariosScreen
+              workspacePath={workspacePath}
+              refreshToken={recordRefreshToken}
+              onRecord={() => setRecordOpen(true)}
+            />
+          )}
+          {view === 'legacy-home' && (
             <Box sx={{ p: 3, flex: 1, overflow: 'auto' }}>
               <Typography variant="h6" sx={{ color: 'text.primary', mb: 0.5 }}>
                 Workspace home
@@ -685,6 +666,7 @@ export default function WorkspaceView({ workspacePath, workspace, pages, themeMo
         open={recordOpen}
         onClose={() => setRecordOpen(false)}
         onSaved={() => {
+          setRecordRefreshToken((value) => value + 1);
           if (onRefresh) onRefresh();
         }}
       />

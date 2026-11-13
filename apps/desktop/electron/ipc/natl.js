@@ -9,6 +9,7 @@ const store = require('../natl/store');
 const { saveScenario } = require('../natl/save');
 const { runScenario, assertInsideWorkspace } = require('../natl/run');
 const { startRecording } = require('../natl/recorder');
+const { scenarioSummary } = require('../natl/scenario');
 const { getStore } = require('./logs');
 
 /** One recorder at a time: a second browser would fight the first for events. */
@@ -27,6 +28,38 @@ function currentRoot() {
 }
 
 function registerNatlIpc() {
+  ipcMain.handle('natl:listScenarios', async () => {
+    const root = currentRoot();
+    const dir = store.testsDir(root);
+
+    return store.listScenarios(dir).map((file) => {
+      let stat = null;
+      try {
+        stat = fs.statSync(file);
+      } catch {
+        /* a broken file still deserves a row */
+      }
+      return scenarioSummary({ filePath: file, root, read: store.readScenario(file), stat });
+    });
+  });
+
+  ipcMain.handle('natl:readScenario', async (_, relativePath) => {
+    const root = currentRoot();
+    const resolved = assertInsideWorkspace(root, path.join(root, relativePath));
+    return store.readScenario(resolved);
+  });
+
+  ipcMain.handle('natl:writeScenario', async (_, payload = {}) => {
+    const root = currentRoot();
+    const { relativePath, text } = payload;
+    if (typeof text !== 'string') throw new Error('Нет текста сценария');
+    const resolved = assertInsideWorkspace(root, path.join(root, relativePath));
+    if (!store.isScenarioFile(resolved)) throw new Error('Это не файл сценария');
+
+    store.writeScenario(resolved, text);
+    return { relativePath, savedAt: new Date().toISOString() };
+  });
+
   ipcMain.handle('natl:saveScenario', async (_, testId, options = {}) => {
     const root = currentRoot();
     const test = filestore.readTest(root, testId);

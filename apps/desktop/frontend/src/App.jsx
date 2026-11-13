@@ -11,7 +11,7 @@ import WelcomeOverview from './screens/WelcomeOverview';
 // route prevented React from mounting when that graph failed or stalled in Electron.
 const WorkspaceView = lazy(() => import('./screens/WorkspaceView'));
 
-const THEME_STORAGE_KEY = 'testblox-theme';
+const THEME_STORAGE_KEY = 'natl-theme';
 
 const sharedThemeComponents = {
   MuiButton: {
@@ -38,14 +38,14 @@ const sharedThemeComponents = {
 const lightTheme = createTheme({
   palette: {
     mode: 'light',
-    primary: { main: '#1565c0', dark: '#0d47a1' },
-    secondary: { main: '#1565c0', dark: '#0d47a1' },
-    success: { main: '#2e7d32', dark: '#1b5e20' },
-    warning: { main: '#e65100' },
-    error: { main: '#c62828' },
-    background: { default: '#ffffff', paper: '#f5f5f5' },
-    text: { primary: '#000000', secondary: '#616161' },
-    divider: '#e0e0e0',
+    primary: { main: '#0D9488', dark: '#0F766E', light: '#14B8A6' },
+    secondary: { main: '#0F172A', dark: '#020617' },
+    success: { main: '#0D9488', dark: '#0F766E' },
+    warning: { main: '#B45309' },
+    error: { main: '#BE123C' },
+    background: { default: '#F8FAFC', paper: '#FFFFFF' },
+    text: { primary: '#0F172A', secondary: '#64748B' },
+    divider: '#E2E8F0',
   },
   typography: {
     fontFamily: '"Golos Text", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
@@ -59,14 +59,14 @@ const lightTheme = createTheme({
 const darkTheme = createTheme({
   palette: {
     mode: 'dark',
-    primary: { main: '#42a5f5', dark: '#1e88e5' },
-    secondary: { main: '#42a5f5', dark: '#1e88e5' },
-    success: { main: '#4caf50', dark: '#388e3c' },
-    warning: { main: '#ff9800' },
-    error: { main: '#ef5350' },
-    background: { default: '#0a0a0a', paper: '#141414' },
-    text: { primary: '#ffffff', secondary: '#9e9e9e' },
-    divider: '#333333',
+    primary: { main: '#14B8A6', dark: '#0D9488', light: '#2DD4BF' },
+    secondary: { main: '#94A3B8', dark: '#64748B' },
+    success: { main: '#14B8A6', dark: '#0D9488' },
+    warning: { main: '#F59E0B' },
+    error: { main: '#F43F5E' },
+    background: { default: '#0B1220', paper: '#0F172A' },
+    text: { primary: '#E2E8F0', secondary: '#94A3B8' },
+    divider: '#1E293B',
   },
   typography: {
     fontFamily: '"Golos Text", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',

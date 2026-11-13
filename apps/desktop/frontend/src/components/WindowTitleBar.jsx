@@ -42,10 +42,12 @@ export default function WindowTitleBar() {
           minWidth: 0,
         }}
       >
-        <Typography variant="caption" sx={{ color: 'text.primary', fontWeight: 600, letterSpacing: '-0.02em' }}>
-          Test
-          <Box component="span" sx={{ color: 'primary.main' }}>Blox</Box>
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5 }}>
+          <Typography variant="caption" sx={{ color: 'text.primary', fontWeight: 700, letterSpacing: '0.08em' }}>
+            NATL
+          </Typography>
+          <Box component="span" sx={{ width: 5, height: 5, borderRadius: '50%', bgcolor: 'primary.main' }} />
+        </Box>
       </Box>
 
       <Box sx={{ display: 'flex', alignItems: 'stretch', WebkitAppRegion: 'no-drag' }}>

@@ -101,6 +101,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   natlRecordStop: (options) => ipcRenderer.invoke('natl:recordStop', options || {}),
   natlRecordCancel: () => ipcRenderer.invoke('natl:recordCancel'),
   natlSaveRecorded: (payload) => ipcRenderer.invoke('natl:saveRecorded', payload || {}),
+  natlListScenarios: () => ipcRenderer.invoke('natl:listScenarios'),
+  natlReadScenario: (relativePath) => ipcRenderer.invoke('natl:readScenario', relativePath),
+  natlWriteScenario: (payload) => ipcRenderer.invoke('natl:writeScenario', payload || {}),
   onNatlRecordProgress: (cb) => {
     const fn = (_, payload) => cb(payload);
     ipcRenderer.on('main:natl-record-progress', fn);

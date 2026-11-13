@@ -1,6 +1,6 @@
 {
   "name": "natl-desktop",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "NATL — record a path through your app, get a YAML test you can run here or in CI",
   "main": "electron/main.js",
   "private": true,
@@ -8,7 +8,7 @@
     "postinstall": "playwright install chromium",
     "start": "electron .",
     "dev": "electron .",
-    "test:natl": "node --test electron/natl/convert.test.js electron/natl/store.test.js electron/natl/save.test.js electron/natl/run.test.js electron/natl/recorder.test.js electron/natl/log.test.js",
+    "test:natl": "node --test electron/natl/convert.test.js electron/natl/store.test.js electron/natl/save.test.js electron/natl/run.test.js electron/natl/recorder.test.js electron/natl/log.test.js electron/natl/scenario.test.js",
     "smoke:natl": "node scripts/smoke-natl-run.js",
     "smoke:record": "node scripts/smoke-natl-recorder.js",
     "dev:vite": "cd frontend && npm run dev",
