@@ -1,0 +1,77 @@
+{
+  "name": "testblox",
+  "version": "1.1.0",
+  "description": "TestBlox - no-code test automation with Git integration",
+  "main": "electron/main.js",
+  "private": true,
+  "scripts": {
+    "postinstall": "playwright install chromium",
+    "start": "electron .",
+    "dev": "electron .",
+    "dev:vite": "cd frontend && npm run dev",
+    "dev:electron": "cross-env ELECTRON_START_URL=http://localhost:5173 electron .",
+    "dev:full": "concurrently -k \"npm run dev:vite\" \"wait-on http://localhost:5173 && cross-env ELECTRON_START_URL=http://localhost:5173 electron .\"",
+    "build:frontend": "cd frontend && npm ci && npm run build && node -e \"require('fs').cpSync('dist', '../renderer', {recursive: true, force: true})\"",
+    "write-build-config": "node scripts/write-build-config.js",
+    "build": "npm run build:frontend && npm run write-build-config && electron-builder --win && node scripts/copy-release-exe.js",
+    "build:dir": "npm run build:frontend && npm run write-build-config && electron-builder --win --dir",
+    "build:custom": "npm run build:frontend && node scripts/write-build-config.js --flavor=custom && electron-builder --win && node scripts/copy-release-exe.js",
+    "build:custom:dir": "npm run build:frontend && node scripts/write-build-config.js --flavor=custom && electron-builder --win --dir",
+    "pack": "electron-builder --win --dir",
+    "smoke:llm-config": "node scripts/llm-config-smoke.js",
+    "icons:app": "node scripts/normalize-app-icon.js"
+  },
+  "dependencies": {
+    "archiver": "^7.0.1",
+    "axios": "1.13.6",
+    "dotenv": "^17.4.0",
+    "electron-is-dev": "^2.0.0",
+    "extract-zip": "^2.0.1",
+    "form-data": "^4.0.5",
+    "git-url-parse": "^14.1.0",
+    "jsdom": "^25.0.0",
+    "playwright": "^1.49.0",
+    "randexp": "^0.5.3",
+    "simple-git": "^3.22.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1",
+    "sharp": "^0.33.5",
+    "wait-on": "^8.0.1"
+  },
+  "build": {
+    "appId": "com.testblox.desktop",
+    "productName": "TestBlox",
+    "icon": "electron/assets/icon.png",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "electron/**/*",
+      "renderer/**/*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}

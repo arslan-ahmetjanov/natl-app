@@ -1,0 +1,4 @@
+{
+  "flavor": "default",
+  "llmApiBaseUrl": "https://api.vsegpt.ru/v1"
+}

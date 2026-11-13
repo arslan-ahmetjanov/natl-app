@@ -1,0 +1,25 @@
+dist-bundled-browser
+# Dependencies
+node_modules
+
+# Build outputs
+dist
+dist-playwright-browsers
+renderer
+release
+
+# Logs
+*.log
+.testblox/run-logs/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Editor / IDE
+.vscode
+
+# OS
+Thumbs.db
+.DS_Store
