@@ -9,6 +9,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // App
   getPath: (name) => ipcRenderer.invoke('app:getPath', name),
   getAppInfo: () => ipcRenderer.invoke('app:info'),
+  // Обновления
+  updateGet: () => ipcRenderer.invoke('update:get'),
+  updateSet: (settings) => ipcRenderer.invoke('update:set', settings || {}),
+  updateCheck: () => ipcRenderer.invoke('update:check'),
+  updateInstall: () => ipcRenderer.invoke('update:install'),
+  onUpdateStatus: (cb) => {
+    const fn = (_, payload) => cb(payload);
+    ipcRenderer.on('main:update-status', fn);
+    return () => ipcRenderer.removeListener('main:update-status', fn);
+  },
   windowMinimize: () => ipcRenderer.invoke('window:minimize'),
   windowToggleMaximize: () => ipcRenderer.invoke('window:toggleMaximize'),
   windowClose: () => ipcRenderer.invoke('window:close'),

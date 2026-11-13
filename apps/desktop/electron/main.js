@@ -399,4 +399,8 @@ registerParserIpc();
 const { registerNatlIpc } = require('./ipc/natl');
 registerNatlIpc();
 
+// --- Автообновление ---
+const { registerUpdaterIpc } = require('./ipc/updater');
+registerUpdaterIpc();
+
 // --- Tests run + reports (registered in whenReady after createWindow) ---
