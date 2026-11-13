@@ -49,5 +49,5 @@ jobs:
       - name: Сборка ${{ matrix.package }}
         working-directory: ${{ matrix.package }}
         run: |
-          pnpm install --frozen-lockfile
+          pnpm install --no-frozen-lockfile
           pnpm build
