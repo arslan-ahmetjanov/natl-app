@@ -70,7 +70,7 @@ export default function OnboardingDialog() {
         </Stack>
       </DialogContent>
       <DialogActions>
-        <Button variant="contained" onClick={close}>Понятно</Button>
+        <Button variant="contained" onClick={close}>Ясно</Button>
       </DialogActions>
     </Dialog>
   );

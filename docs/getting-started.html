@@ -66,6 +66,21 @@
 </nav>
 
 <h2 id="install">Установка</h2>
+<p>Два способа работать с NATL: приложение и CLI. Формат сценариев один.</p>
+
+<h3 id="ide">Приложение NATL IDE</h3>
+<p>Windows-сборка: запись кликов, редактор с автокомплитом и проверкой,
+окружение с локаторами, прогон со скриншотами, ИИ-агент. Скачать в
+<a href="https://github.com/arslan-ahmetjanov/natl-ide/releases">релизах</a>.</p>
+<ol>
+  <li>Установить приложение и открыть папку проекта (или создать новый).</li>
+  <li>Нажать «Записать», ввести адрес и пройти путь руками.</li>
+  <li>Файл появится в <code>tests/</code>; «Run» покажет шаги и кадры.</li>
+</ol>
+<p>Тот же файл запускается в CI командой <code>natl run tests/</code> — приложение
+и CLI используют один движок <code>@natl/core</code>.</p>
+
+<h3 id="cli">CLI</h3>
 <p>Нужен Node.js 18 или новее.</p>
 <pre><code>npm install -g @natl/cli @natl/adapter-playwright
 npx playwright install chromium

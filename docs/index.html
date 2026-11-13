@@ -76,7 +76,19 @@ NATL превращает его в YAML-файл, который можно п�
   <a class="card" href="adapters.html"><h3>Движки</h3><p>Playwright по умолчанию; Selenium и Cypress, когда нужны.</p></a>
   <a class="card" href="canon.html"><h3>Канон</h3><p>Решения, которые не меняются.</p></a>
 </div>
-<h2>Установка</h2>
+<h2>Приложение NATL IDE</h2>
+<p>Отдельная программа для Windows: запись кликов, редактор сценария,
+прогон и журнал в одном окне. Сценарии — те же YAML-файлы, что запускает CLI.</p>
+<div class="card-grid">
+  <a class="card" href="#record"><h3>Запись</h3><p>Пройдите путь руками — файл появится в <code>tests/</code>.</p></a>
+  <a class="card" href="#resources"><h3>Окружение</h3><p>Локаторы и повторяемые действия в <code>pages/</code>.</p></a>
+  <a class="card" href="#run"><h3>Прогон</h3><p>Шаги, статусы, скриншоты по шагам, режим с окном.</p></a>
+  <a class="card" href="#agent"><h3>ИИ-агент</h3><p>Чат с инструментами: читает, правит и запускает сценарии.</p></a>
+</div>
+<p>Скачать: <a href="https://github.com/arslan-ahmetjanov/natl-ide/releases">релизы NATL IDE</a>.
+Схема версий: <code>0.x</code> — предварительные сборки, <code>1.0.0</code> — стабильная.</p>
+
+<h2>Установка CLI</h2>
 <pre><code>npm install -g @natl/cli @natl/adapter-playwright
 npx playwright install chromium
 natl --version</code></pre>

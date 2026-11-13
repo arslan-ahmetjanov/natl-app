@@ -344,6 +344,31 @@ ipcMain.handle('app:info', () => ({
   electron: process.versions.electron,
 }));
 
+// Терминал открывается системный, в папке проекта. Свой терминал не нужен:
+// встроенный эмулятор — отдельный продукт, а git и npm уже настроены в системе.
+ipcMain.handle('shell:openTerminal', async (_, targetPath) => {
+  const { spawn } = require('node:child_process');
+  const { getCurrentPath } = require('./ipc/workspace');
+  const cwd = targetPath || getCurrentPath();
+  if (!cwd) throw new Error('Рабочая папка не открыта');
+
+  try {
+    if (process.platform === 'win32') {
+      spawn('cmd.exe', ['/c', 'start', '', 'cmd.exe', '/k', 'cd', '/d', cwd], {
+        detached: true,
+        stdio: 'ignore',
+      }).unref();
+    } else if (process.platform === 'darwin') {
+      spawn('open', ['-a', 'Terminal', cwd], { detached: true, stdio: 'ignore' }).unref();
+    } else {
+      spawn('x-terminal-emulator', [], { cwd, detached: true, stdio: 'ignore' }).unref();
+    }
+    return { opened: true, cwd };
+  } catch (err) {
+    throw new Error(`Не удалось открыть терминал: ${err.message || err}`);
+  }
+});
+
 ipcMain.handle('shell:openPath', async (_, targetPath) => {
   const { shell } = require('electron');
   const { getCurrentPath } = require('./ipc/workspace');

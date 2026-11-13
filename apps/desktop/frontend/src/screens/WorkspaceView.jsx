@@ -24,6 +24,7 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import HomeIcon from '@mui/icons-material/Home';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import SettingsIcon from '@mui/icons-material/Settings';
+import TerminalIcon from '@mui/icons-material/Terminal';
 import LlmSettingsDialog from '../components/LlmSettingsDialog';
 import OnboardingDialog from '../components/OnboardingDialog';
 import RecordScenarioDialog from '../components/RecordScenarioDialog';
@@ -176,6 +177,26 @@ export default function WorkspaceView({
           <Box sx={{ flex: 1 }} />
 
           <Divider sx={{ my: 1 }} />
+          <Tooltip title="Открыть в терминале" placement="right">
+            <IconButton
+              size="small"
+              onClick={async () => {
+                try {
+                  await window.electronAPI.openTerminal(workspacePath);
+                } catch (err) {
+                  window.electronAPI.logsWrite?.({
+                    level: 'warn',
+                    scope: 'shell',
+                    message: String(err),
+                  });
+                }
+              }}
+              aria-label="Открыть в терминале"
+              sx={{ alignSelf: navOpen ? 'flex-start' : 'center', ml: navOpen ? 0.5 : 0 }}
+            >
+              <TerminalIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
           <Tooltip title="Открыть другую папку" placement="right">
             <IconButton
               size="small"

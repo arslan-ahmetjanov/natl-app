@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // App
   getPath: (name) => ipcRenderer.invoke('app:getPath', name),
   getAppInfo: () => ipcRenderer.invoke('app:info'),
+  openTerminal: (targetPath) => ipcRenderer.invoke('shell:openTerminal', targetPath),
   // Обновления
   updateGet: () => ipcRenderer.invoke('update:get'),
   updateSet: (settings) => ipcRenderer.invoke('update:set', settings || {}),

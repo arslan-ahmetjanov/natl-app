@@ -15,6 +15,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import { LANGS, getLang, setLang } from '../utils/i18n';
 
 const STATUS_TEXT = {
   idle: 'Проверка ещё не запускалась',
@@ -43,6 +44,7 @@ export default function LlmSettingsDialog({ open, onClose }) {
   const [update, setUpdate] = useState(null);
   const [updateError, setUpdateError] = useState(null);
   const [checking, setChecking] = useState(false);
+  const [language, setLanguage] = useState(getLang());
   const api = window.electronAPI;
 
   useEffect(() => {
@@ -119,6 +121,23 @@ export default function LlmSettingsDialog({ open, onClose }) {
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>Настройки</DialogTitle>
       <DialogContent>
+        <Typography variant="overline" sx={{ color: 'text.secondary' }}>Интерфейс</Typography>
+        <TextField
+          select
+          size="small"
+          label="Язык"
+          value={language}
+          onChange={(event) => {
+            setLang(event.target.value);
+            setLanguage(event.target.value);
+          }}
+          sx={{ mt: 1, mb: 2, minWidth: 200 }}
+        >
+          {LANGS.map((item) => (
+            <MenuItem key={item.id} value={item.id}>{item.label}</MenuItem>
+          ))}
+        </TextField>
+
         <Typography variant="overline" sx={{ color: 'text.secondary' }}>ИИ</Typography>
         <Stack spacing={2} sx={{ mt: 1, mb: 2 }}>
           <TextField
