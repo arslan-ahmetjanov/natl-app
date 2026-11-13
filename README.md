@@ -1,142 +1,113 @@
-<p align="center">
-  <img src="brand/natl-lockup.svg" alt="NATL — YAML test runner" width="360" />
-</p>
-
 # NATL
 
-**Not Another Testing Language** — an open-source **test runner**: YAML scenarios for **web UI and API**.
+**Postman для UI-тестов.** Запишите путь через приложение руками — получите YAML-файл
+в своём репозитории. Тот же файл запускается в приложении и в CI, без облака,
+подписки и отправки данных наружу.
 
-Write one compact scenario (optional POM). Run it locally or in CI. Keep typical flows when the stack moves — swap `engine:` (`playwright` → `selenium`; `cypress` is **experimental** with a lower ceiling). Mix UI and HTTP in the same file.
-
-[![npm v1.0.0](./brand/badges/npm.svg)](https://www.npmjs.com/package/@natl/cli)
 [![License: MIT](./brand/badges/license.svg)](./LICENSE)
-[![Docs](./brand/badges/docs.svg)](https://natl-dev.github.io/natl/)
 
-## Production status (1.0)
+## Для кого
 
-NATL **1.0.0** freezes the public API for Playwright-based production use. Contract: [`core/docs/api-1.0.md`](./core/docs/api-1.0.md). Changelog: [`CHANGELOG.md`](./CHANGELOG.md).
+Для команд, у которых нет ресурса на тестирование: разработчики и продукт есть,
+тестировщика и автоматизатора нет, нанимать не планируют. Проверять релиз
+приходится руками, и обычно не проверяют вовсе.
 
-| Ready | Notes |
-|-------|--------|
-| Playwright + CLI | Default path: `natl run`, tags/grep, retries, `--workers`, fail-fast / shard |
-| Reporters | `console`, `junit` (retry/flaky properties), `json`, `allure` |
-| Root CI | Package build/unit + offline sandbox **smoke** (see [`CONTRIBUTING.md`](./CONTRIBUTING.md)) |
-| Consumer CI | Copy [`examples/.github/workflows/natl.yml`](./examples/.github/workflows/natl.yml) |
-| Secrets | Process env + `.env` only — inject Vault/AWS in CI as env vars |
-| Semver | Breaking changes to the frozen surface require a **major** bump |
+Инструмент рассчитан на простые приложения: вход, регистрация, формы, оплата, CRUD.
+Сложные SPA с iframe и WebSocket — за пределами обещаний.
 
-Upgrade from 0.1.x: install `@natl/cli@^1` + `@natl/adapter-playwright@^1` — pilot YAML stays compatible.
+## Как это работает
 
-### Adapter status
-
-| Engine | Status | Ceiling |
-|--------|--------|---------|
-| **playwright** | **Supported** (1.0 default) | Trace / video / fullPage screenshots |
-| **selenium** | **Supported with limits** | Screenshots yes; no Trace Viewer / video (warns) |
-| **cypress** | **Experimental** | Not covered by the 1.0 stability promise |
-| **http** | Built-in (`@natl/core`) | API-only scenarios / `with: http` |
-
-### Known limits (not blocking 1.0)
-
-- Language wave 6+: iframe, network mock, upload/download, tabs — see [`core/docs/canon.md`](./core/docs/canon.md)
-- No TMS / dashboard product in the CLI
-- `api:` steps remain as **deprecated** compat; prefer HTTP verbs / `with: http`
-
-## Why NATL
-
-| | |
-|--|--|
-| **Compact language** | Compact YAML, `elements` / `actions` / `do:` |
-| **Fullstack** | Web UI + API in one file (`with: http`) |
-| **One scenario, many contexts** | Stands (`--env`), vars, `cases:` — not `if: mobile` in steps |
-| **Portable via adapters** | Same YAML; browsers = what the adapter supports |
-| **Honest ceiling** | Most smoke/regression ports; engine-specific edges are escape hatches |
-| **Runner, not a TMS** | CLI runs tests — no dashboard product |
-
-Built for **QA, developers, and DevOps**.
-
-## Quick start
-
-```bash
-npm install -g @natl/cli @natl/adapter-playwright
-npx playwright install chromium
-natl --version
-
-mkdir my-tests && cd my-tests
-natl init
-natl run tests/
+```
+запись кликов → YAML в репозитории → прогон в приложении → тот же файл в CI
 ```
 
-`natl init` scaffolds a smoke test against the live
-[docs sandbox](https://natl-dev.github.io/natl/sandbox.html)
-(`demo@natl.dev` / `secret`). Offline twin: [`examples/fixtures/sandbox.html`](./examples/fixtures/sandbox.html).
-
-Or try the demos in [`examples/`](./examples/).
-
-## Documentation
-
-Site (EN / RU / 中文 / ES · light & dark): **https://natl-dev.github.io/natl/**  
-Start with the [guide](https://natl-dev.github.io/natl/getting-started.html) — install first, then every language block on one page.  
-Agent (draft tests from a git diff + CI): [agent.html](https://natl-dev.github.io/natl/agent.html).
-
-## Packages
-
-| Package | Role |
-|---------|------|
-| [`@natl/core`](./core/) | Language, interpreter, `EngineAdapter` contract, reporters |
-| [`@natl/adapter-playwright`](./adapter-playwright/) | Default UI engine (**supported**) |
-| [`@natl/adapter-selenium`](./adapter-selenium/) | Selenium WebDriver (**supported with limits**) |
-| [`@natl/adapter-cypress`](./adapter-cypress/) | Cypress (**experimental** MVP; not PW parity) |
-| [`@natl/cli`](./cli/) | `natl` CLI |
-
-Same YAML — different `engine:` (`playwright` / `selenium` / `cypress` / `http`).
-
-## Example
+1. Нажимаете **Record**, вводите адрес, проходите путь как обычный пользователь.
+2. Приложение сохраняет `tests/<имя>.yaml` в вашу папку проекта.
+3. **Run** показывает шаги, статусы и скриншоты до и после каждого действия.
+4. В CI работает `natl run tests/ --reporter junit` — без приложения и без токенов.
 
 ```yaml
-name: Sandbox login smoke
+name: Вход в приложение
 engine: playwright
-tags: [smoke]
-
 vars:
-  base_url: https://natl-dev.github.io/natl/sandbox.html
-  user: demo@natl.dev
-  pass: secret
-
+  base_url: https://example.com/login
 steps:
   - goto: $base_url
   - fill: "#email"
     with: $user
   - fill: "#password"
-    with: $pass
+    with: $password
   - click: "#login-btn"
-  - assert: ".welcome"
-    text: "Welcome, demo"
+  - assert: .welcome
+    visible: true
 ```
 
-## Repository layout
+## Чем отличается
 
-| Path | What |
-|------|------|
-| `core/` | language, interpreter, reporters — `@natl/core` |
-| `adapter-*/` | UI engines: Playwright (default), Selenium, Cypress (experimental) |
-| `cli/` | `natl` CLI — `@natl/cli` |
-| `agent/` | LLM agent that drafts tests from a git diff — `@natl/agent` |
-| `apps/desktop/` | NATL desktop app: record clicks, save YAML, watch the run |
-| `examples/`, `docs/`, `brand/` | examples, docs site, brand assets |
+| | |
+|---|---|
+| **Тест — файл, а не аккаунт** | Сценарии лежат в репозитории: дифф, ревью, ветки, откат |
+| **Данные не уходят** | Ничего не отправляется в облако; для банков и закрытых проектов это требование, а не бонус |
+| **Один движок на всех** | Приложение и CI запускают один и тот же `@natl/core` |
+| **Не привязывает к браузеру** | `engine:` переключается между Playwright, Selenium и Cypress |
 
-The desktop app is the product: **self-service testing for teams without a QA resource**. Record a path through the app, get a YAML scenario in your repository, run it in the app or in CI via `natl run`. No cloud, no account, nothing leaves the machine.
+Против Playwright и Cypress: не требуем кода. Против SaaS-сервисов тестирования:
+нет облака, подписки и передачи данных. Против «сделаю потом»: от установки
+до зелёного прогона — минуты, а не недели.
 
-Design docs:
+## Что внутри
 
-- [`docs/design/2026-11-13-product.md`](./docs/design/2026-11-13-product.md) — positioning, USP, metrics, architecture.
-- [`docs/design/2026-11-13-mvp.md`](./docs/design/2026-11-13-mvp.md) — MVP scope and boundaries.
-- [`docs/adr/`](./docs/adr/) — decisions worth remembering.
+| Пакет | Роль |
+|---|---|
+| `@natl/core` | язык, интерпретатор, отчёты, контракт движка |
+| `@natl/adapter-playwright` | основной движок (поддерживается) |
+| `@natl/adapter-selenium` | поддержка с ограничениями |
+| `@natl/adapter-cypress` | экспериментальный |
+| `@natl/cli` | `natl run` — раннер для CI, аналог newman |
+| `@natl/agent` | черновики сценариев из git diff через LLM |
+| `apps/desktop` | приложение: запись, редактор YAML, прогон, журнал |
 
-## Contributing
+## Начать
 
-See [`CONTRIBUTING.md`](./CONTRIBUTING.md). Issues and PRs welcome.
+Приложение (Windows):
 
-## License
+```
+NATL Setup.exe → открыть папку проекта → Record → ввести адрес → пройти путь
+```
 
-[MIT](./LICENSE)
+Раннер в CI:
+
+```bash
+npm install -g @natl/cli @natl/adapter-playwright
+npx playwright install chromium
+natl run tests/ --reporter junit
+```
+
+Сборка приложения из исходников:
+
+```
+cd apps/desktop
+npm ci
+npm start        # разработка
+npm run build    # установщик в dist/
+```
+
+## Состояние
+
+Версия 2.3.0. Готово: запись кликов и ввода, YAML как единственный формат,
+редактор с автосохранением и вкладками, прогон со скриншотами по шагам,
+журнал с уровнями и файлом, сборки Windows.
+
+Дальше: скачивание браузера при первом запуске, сборки Linux и macOS,
+подсказки проверок после действия, сервер MCP для ИИ-агентов.
+
+## Документация
+
+- [`docs/design/2026-11-13-product.md`](./docs/design/2026-11-13-product.md) — позиционирование, метрики, архитектура.
+- [`docs/design/2026-11-13-mvp.md`](./docs/design/2026-11-13-mvp.md) — границы MVP.
+- [`docs/adr/`](./docs/adr/) — принятые решения.
+- `core/docs/` — язык и API.
+
+## Лицензия
+
+MIT. Подробности в [LICENSE](./LICENSE).
