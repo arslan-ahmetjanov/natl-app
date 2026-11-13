@@ -114,6 +114,19 @@ steps:
     text: "Welcome, demo"
 ```
 
+## Repository layout
+
+| Path | What |
+|------|------|
+| `core/` | language, interpreter, reporters — `@natl/core` |
+| `adapter-*/` | UI engines: Playwright (default), Selenium, Cypress (experimental) |
+| `cli/` | `natl` CLI — `@natl/cli` |
+| `agent/` | LLM agent that drafts tests from a git diff — `@natl/agent` |
+| `apps/desktop/` | NATL desktop app: record clicks, save YAML, watch the run |
+| `examples/`, `docs/`, `brand/` | examples, docs site, brand assets |
+
+The desktop app is the product: **Postman for UI**. Tests stay plain YAML files in the user's repository, so the same scenario runs in the app and in CI via `natl run`. MVP scope and boundaries: [`docs/design/2026-11-13-mvp.md`](./docs/design/2026-11-13-mvp.md).
+
 ## Contributing
 
 See [`CONTRIBUTING.md`](./CONTRIBUTING.md). Issues and PRs welcome.

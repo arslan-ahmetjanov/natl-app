@@ -10,6 +10,10 @@ dist/
 **/dist/
 *.tsbuildinfo
 
+# desktop app build output
+apps/desktop/renderer/
+apps/desktop/dist/
+
 # env & local
 .env
 .env.*
