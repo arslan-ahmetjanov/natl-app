@@ -1,5 +1,0 @@
-node_modules
-dist
-*.tsbuildinfo
-eval/report.json
-.git

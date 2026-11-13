@@ -57,15 +57,17 @@ steps:
 
 ## Что внутри
 
-| Пакет | Роль |
+В этом репозитории — приложение. Движок живёт отдельно:
+[`natl`](https://github.com/arslan-ahmetjanov/natl).
+
+| Репозиторий | Роль |
 |---|---|
-| `@natl/core` | язык, интерпретатор, отчёты, контракт движка |
-| `@natl/adapter-playwright` | основной движок (поддерживается) |
-| `@natl/adapter-selenium` | поддержка с ограничениями |
-| `@natl/adapter-cypress` | экспериментальный |
-| `@natl/cli` | `natl run` — раннер для CI, аналог newman |
-| `@natl/agent` | черновики сценариев из git diff через LLM |
-| `apps/desktop` | приложение: запись, редактор YAML, прогон, журнал |
+| `natl-ide` (этот) | приложение: запись, редактор YAML, прогон, журнал, ИИ-агент |
+| [`natl`](https://github.com/arslan-ahmetjanov/natl) | движок: `@natl/core`, `@natl/cli`, адаптеры, `@natl/agent` |
+| [`natl-site`](https://github.com/arslan-ahmetjanov/natl-site) | сайт документации |
+
+Приложение ставит движок из npm, поэтому формат сценария один: файл, собранный
+в приложении, запускается командой `natl run` без изменений.
 
 ## Начать
 

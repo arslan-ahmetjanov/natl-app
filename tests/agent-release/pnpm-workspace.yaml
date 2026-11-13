@@ -1,9 +1,0 @@
-packages:
-  - "."
-
-allowBuilds:
-  esbuild: true
-
-overrides:
-  "@natl/agent": link:../../agent
-  "@natl/core": link:../../core

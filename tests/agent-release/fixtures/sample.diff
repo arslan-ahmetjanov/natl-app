@@ -1,9 +1,0 @@
-diff --git a/src/api/user.py b/src/api/user.py
---- a/src/api/user.py
-+++ b/src/api/user.py
-@@ -1,4 +1,7 @@
- def existing():
-     pass
-+
-+async def get_user(timeout=None):
-+    return {"id": 1}

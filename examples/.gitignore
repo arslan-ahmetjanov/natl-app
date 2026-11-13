@@ -1,6 +1,0 @@
-node_modules/
-screenshots/
-artifacts/
-.env
-.DS_Store
-*.log
