@@ -72,8 +72,7 @@ function writeResource(root, relativePath, text) {
   return { relativePath, savedAt: new Date().toISOString() };
 }
 
-function createResource(root, name) {
-  ensureDir(root);
+function createResource(root, name) {  ensureDir(root);
   const base =
     String(name || 'resource')
       .toLowerCase()
@@ -112,6 +111,38 @@ function createResource(root, name) {
   };
 }
 
+function slugName(value, fallback) {
+  return (
+    String(value || fallback)
+      .toLowerCase()
+      .replace(/[^a-zа-я0-9]+/gi, '-')
+      .replace(/^-+|-+$/g, '') || fallback
+  );
+}
+
+function renameResource(root, relativePath, newName) {
+  const from = resolveResource(root, relativePath);
+  const fileName = `${slugName(newName, 'resource')}.yaml`;
+  const to = path.join(resourcesDir(root), fileName);
+
+  if (path.resolve(from) === path.resolve(to)) {
+    return { relativePath, fileName, unchanged: true };
+  }
+  if (fs.existsSync(to)) throw new Error(`Файл ${fileName} уже существует`);
+
+  fs.renameSync(from, to);
+  return {
+    relativePath: path.relative(root, to).split(path.sep).join('/'),
+    fileName,
+  };
+}
+
+function deleteResource(root, relativePath) {
+  const target = resolveResource(root, relativePath);
+  fs.unlinkSync(target);
+  return { deleted: true, relativePath };
+}
+
 module.exports = {
   RESOURCES_DIR,
   resourcesDir,
@@ -120,4 +151,6 @@ module.exports = {
   writeResource,
   createResource,
   resolveResource,
+  renameResource,
+  deleteResource,
 };

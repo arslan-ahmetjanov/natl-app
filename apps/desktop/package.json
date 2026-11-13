@@ -1,6 +1,6 @@
 {
   "name": "natl-desktop",
-  "version": "2.8.0",
+  "version": "2.9.0",
   "description": "NATL — record a path through your app, get a YAML test you can run here or in CI",
   "main": "electron/main.js",
   "private": true,
@@ -8,7 +8,7 @@
     "postinstall": "playwright install chromium",
     "start": "electron .",
     "dev": "electron .",
-    "test:natl": "node --test electron/natl/convert.test.js electron/natl/store.test.js electron/natl/save.test.js electron/natl/run.test.js electron/natl/recorder.test.js electron/natl/log.test.js electron/natl/scenario.test.js electron/natl/ai.test.js electron/natl/agent-chat.test.js electron/natl/resources.test.js",
+    "test:natl": "node --test electron/natl/convert.test.js electron/natl/store.test.js electron/natl/save.test.js electron/natl/run.test.js electron/natl/recorder.test.js electron/natl/log.test.js electron/natl/scenario.test.js electron/natl/ai.test.js electron/natl/agent-chat.test.js electron/natl/resources.test.js electron/natl/lint.test.js electron/natl/artifacts.test.js",
     "smoke:natl": "node scripts/smoke-natl-run.js",
     "smoke:record": "node scripts/smoke-natl-recorder.js",
     "check:nda": "node ../../scripts/check-nda.js",
@@ -39,7 +39,8 @@
     "jsdom": "^25.0.0",
     "playwright": "^1.49.0",
     "randexp": "^0.5.3",
-    "simple-git": "^3.22.0"
+    "simple-git": "^3.22.0",
+    "yaml": "^2.9.1"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",

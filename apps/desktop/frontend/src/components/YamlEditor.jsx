@@ -40,7 +40,7 @@ function natlCompletions(context) {
     const [, key, word] = valueMatch;
     return {
       from: context.pos - word.length,
-      options: VALUES[key].map((value) => ({ label: value, type: 'keyword' })),
+      options: VALUES[key].map((value) => ({ label: value, type: 'keyword', detail: 'значение' })),
     };
   }
 
@@ -50,24 +50,38 @@ function natlCompletions(context) {
     const word = stepMatch[1];
     return {
       from: context.pos - word.length,
-      options: VERBS.map((verb) => ({ label: verb, type: 'keyword' })),
+      options: VERBS.map((verb) => ({
+        label: `${verb}:`,
+        apply: `${verb}: `,
+        type: 'keyword',
+        detail: 'шаг',
+      })),
     };
   }
 
-  // ключи шага после глагола: "click: #btn" → следующая строка с "wi"
-  const optionMatch = trimmed.match(/^([a-z_]+):\s*$/);
-  if (optionMatch) {
+  // ключи опций шага: следующая строка с отступом
+  if (/^\s{2,}$/.test(before) || /^\s{2,}\w*$/.test(before)) {
     return {
-      from: context.pos,
-      options: OPTIONS.map((option) => ({ label: option, type: 'property' })),
+      from: line.from + before.length - before.trimStart().length,
+      options: OPTIONS.map((option) => ({
+        label: `${option}:`,
+        apply: `${option}: `,
+        type: 'property',
+        detail: 'опция шага',
+      })),
     };
   }
 
   // корневые ключи в начале строки
-  if (context.pos === line.from + (before.length - trimmed.length)) {
+  if (trimmed.length === 0 || /^[a-z_]*$/.test(trimmed)) {
     return {
       from: line.from,
-      options: ROOT_KEYS.map((key) => ({ label: `${key}:`, type: 'property' })),
+      options: ROOT_KEYS.map((key) => ({
+        label: `${key}:`,
+        apply: `${key}: `,
+        type: 'property',
+        detail: 'поле сценария',
+      })),
     };
   }
 

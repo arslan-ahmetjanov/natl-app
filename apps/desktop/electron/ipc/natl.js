@@ -12,6 +12,8 @@ const { runScenario, assertInsideWorkspace } = require('../natl/run');
 const { startRecording } = require('../natl/recorder');
 const { scenarioSummary } = require('../natl/scenario');
 const resources = require('../natl/resources');
+const artifacts = require('../natl/artifacts');
+const { lintYaml } = require('../natl/lint');
 const { generateSteps } = require('../natl/ai');
 const { chat } = require('../natl/agent-chat');
 const { getStore } = require('./logs');
@@ -195,6 +197,62 @@ function registerNatlIpc() {
   ipcMain.handle('resources:create', async (_, name) => {
     const result = resources.createResource(currentRoot(), name);
     getStore().info('resources', `ресурс создан: ${result.relativePath}`);
+    return result;
+  });
+  ipcMain.handle('resources:rename', async (_, payload = {}) => {
+    const result = resources.renameResource(currentRoot(), payload.relativePath, payload.name);
+    getStore().info('resources', `ресурс переименован: ${result.relativePath}`);
+    return result;
+  });
+  ipcMain.handle('resources:delete', async (_, relativePath) => {
+    const result = resources.deleteResource(currentRoot(), relativePath);
+    getStore().info('resources', `ресурс удалён: ${relativePath}`);
+    return result;
+  });
+
+  // Проверка до запуска
+  ipcMain.handle('natl:lint', (_, text) => lintYaml(text));
+
+  // CRUD сценариев
+  ipcMain.handle('natl:deleteScenario', async (_, relativePath) => {
+    const root = currentRoot();
+    const resolved = assertInsideWorkspace(root, path.join(root, String(relativePath || '')));
+    if (!store.isScenarioFile(resolved)) throw new Error('Это не файл сценария');
+    fs.unlinkSync(resolved);
+    getStore().info('natl', `сценарий удалён: ${relativePath}`);
+    return { deleted: true, relativePath };
+  });
+
+  ipcMain.handle('natl:renameScenario', async (_, payload = {}) => {
+    const root = currentRoot();
+    const from = assertInsideWorkspace(root, path.join(root, String(payload.relativePath || '')));
+    if (!store.isScenarioFile(from)) throw new Error('Это не файл сценария');
+
+    const fileName = `${String(payload.name || 'scenario')
+      .toLowerCase()
+      .replace(/[^a-zа-я0-9]+/gi, '-')
+      .replace(/^-+|-+$/g, '') || 'scenario'}.yaml`;
+    const to = path.join(path.dirname(from), fileName);
+
+    if (path.resolve(from) !== path.resolve(to)) {
+      if (fs.existsSync(to)) throw new Error(`Файл ${fileName} уже существует`);
+      fs.renameSync(from, to);
+    }
+    const relativePath = path.relative(root, to).split(path.sep).join('/');
+    getStore().info('natl', `сценарий переименован: ${relativePath}`);
+    return { relativePath, fileName };
+  });
+
+  // Артефакты прогонов
+  ipcMain.handle('natl:artifactsInfo', async () => artifacts.artifactsInfo(currentRoot()));
+  ipcMain.handle('natl:cleanArtifacts', async (_, options = {}) => {
+    const result = artifacts.cleanArtifacts({
+      root: currentRoot(),
+      keepLast: Number(options.keepLast) || 0,
+    });
+    getStore().info('artifacts', `удалено прогонов: ${result.removed}`, {
+      freedBytes: result.freedBytes,
+    });
     return result;
   });
 

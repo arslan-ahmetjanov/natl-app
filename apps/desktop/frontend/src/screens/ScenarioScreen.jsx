@@ -1,11 +1,17 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   Box,
   Button,
   Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Divider,
   IconButton,
+  Popover,
+  TextField,
   ToggleButton,
   ToggleButtonGroup,
   Tooltip,
@@ -15,23 +21,35 @@ import {
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
+import CleaningServicesIcon from '@mui/icons-material/CleaningServices';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import { parse, stringify } from 'yaml';
 import YamlEditor from '../components/YamlEditor';
 import StepDialog from '../components/StepDialog';
 import ScenarioSteps from '../components/ScenarioSteps';
 import ScreenshotCarousel from '../components/ScreenshotCarousel';
+import { useHotkeys } from '../utils/useHotkeys';
 
 const AUTOSAVE_MS = 700;
+const LINT_MS = 500;
+
+function formatBytes(bytes) {
+  if (!bytes) return '0 Б';
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} КБ`;
+  return `${(bytes / 1024 / 1024).toFixed(1)} МБ`;
+}
 
 /**
- * Экран сценария.
- *
- * Сверху — файл, снизу — отчёт. Скриншоты в отчёт по умолчанию не попадают:
- * их открывает отдельная кнопка, чтобы результат читался, а не листался.
+ * Экран сценария: файл сверху, отчёт снизу, проверка до запуска.
+ * Скриншоты — отдельной каруселью и с уборкой, чтобы не копились гигабайты.
  */
-export default function ScenarioScreen({ relativePath, title, workspacePath, onBack }) {
+export default function ScenarioScreen({ relativePath, title, workspacePath, onBack, onRenamed }) {
   const theme = useTheme();
   const [text, setText] = useState('');
   const [savedText, setSavedText] = useState('');
@@ -41,7 +59,16 @@ export default function ScenarioScreen({ relativePath, title, workspacePath, onB
   const [run, setRun] = useState(null);
   const [stepOpen, setStepOpen] = useState(false);
   const [shotsOpen, setShotsOpen] = useState(false);
+  const [issues, setIssues] = useState({ ok: true, issues: [] });
+  const [issuesAnchor, setIssuesAnchor] = useState(null);
+  const [renameOpen, setRenameOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [cleanOpen, setCleanOpen] = useState(false);
+  const [artifacts, setArtifacts] = useState({ runs: 0, files: 0, bytes: 0 });
+  const [newName, setNewName] = useState('');
+  const [actionError, setActionError] = useState(null);
   const timer = useRef(null);
+  const lintTimer = useRef(null);
   const api = window.electronAPI;
 
   const load = useCallback(async () => {
@@ -61,6 +88,11 @@ export default function ScenarioScreen({ relativePath, title, workspacePath, onB
   }, [load]);
 
   useEffect(() => {
+    api.natlArtifactsInfo().then(setArtifacts).catch(() => {});
+  }, [api, run]);
+
+  // Автосохранение
+  useEffect(() => {
     if (text === savedText) return undefined;
     if (timer.current) clearTimeout(timer.current);
     setState({ status: 'saving' });
@@ -76,6 +108,19 @@ export default function ScenarioScreen({ relativePath, title, workspacePath, onB
     }, AUTOSAVE_MS);
     return undefined;
   }, [text, savedText, api, relativePath]);
+
+  // Проверка до запуска
+  useEffect(() => {
+    if (lintTimer.current) clearTimeout(lintTimer.current);
+    lintTimer.current = setTimeout(async () => {
+      try {
+        setIssues(await api.natlLint(text));
+      } catch {
+        setIssues({ ok: true, issues: [] });
+      }
+    }, LINT_MS);
+    return undefined;
+  }, [text, api]);
 
   const handleRun = async () => {
     if (run && run.running) return;
@@ -109,7 +154,73 @@ export default function ScenarioScreen({ relativePath, title, workspacePath, onB
     }
   };
 
+  const addStep = (step) => {
+    try {
+      const doc = parse(text || '') || {};
+      if (!Array.isArray(doc.steps)) doc.steps = [];
+      doc.steps.push(step);
+      setText(stringify(doc, { lineWidth: 0 }));
+      setActionError(null);
+    } catch (err) {
+      setActionError(`Не удалось изменить YAML: ${err.message || err}`);
+    }
+  };
+
+  const rename = async () => {
+    try {
+      const result = await api.natlRenameScenario({ relativePath, name: newName });
+      setRenameOpen(false);
+      if (onRenamed) onRenamed(result.relativePath, result.fileName.replace(/\.ya?ml$/i, ''));
+    } catch (err) {
+      setActionError(err.message || String(err));
+    }
+  };
+
+  const remove = async () => {
+    try {
+      await api.natlDeleteScenario(relativePath);
+      setDeleteOpen(false);
+      onBack();
+    } catch (err) {
+      setActionError(err.message || String(err));
+    }
+  };
+
+  const clean = async () => {
+    try {
+      const result = await api.natlCleanArtifacts({ keepLast: 0 });
+      setArtifacts(await api.natlArtifactsInfo());
+      setRun((prev) => (prev ? { ...prev, images: [] } : prev));
+      setCleanOpen(false);
+      setActionError(
+        result.removed
+          ? `Удалено прогонов: ${result.removed}, освобождено ${formatBytes(result.freedBytes)}`
+          : 'Нечего удалять',
+      );
+    } catch (err) {
+      setActionError(err.message || String(err));
+    }
+  };
+
+  const errorCount = issues.issues.filter((item) => item.severity === 'error').length;
+  const warningCount = issues.issues.length - errorCount;
   const shotCount = run && run.images ? run.images.length : 0;
+
+  const hotkeys = useMemo(
+    () => ({
+      'mod+r': () => handleRun(),
+      'mod+s': async () => {
+        await api.natlWriteScenario({ relativePath, text });
+        setSavedText(text);
+        setState({ status: 'saved', at: new Date() });
+      },
+      'mod+shift+e': () => setMode((prev) => (prev === 'yaml' ? 'human' : 'yaml')),
+      'mod+n': () => setStepOpen(true),
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [text, relativePath, run],
+  );
+  useHotkeys(hotkeys);
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
@@ -130,6 +241,19 @@ export default function ScenarioScreen({ relativePath, title, workspacePath, onB
         </IconButton>
         <Typography variant="subtitle1">{title}</Typography>
         <Chip size="small" label={relativePath} variant="outlined" />
+
+        <Tooltip title="Проверка до запуска">
+          <Chip
+            size="small"
+            icon={errorCount ? <ErrorOutlineIcon /> : <CheckCircleIcon />}
+            color={errorCount ? 'error' : warningCount ? 'warning' : 'success'}
+            variant="outlined"
+            label={errorCount ? `${errorCount} ошибок` : warningCount ? `${warningCount} замечаний` : 'проверено'}
+            onClick={(event) => setIssuesAnchor(event.currentTarget)}
+            sx={{ cursor: 'pointer' }}
+          />
+        </Tooltip>
+
         <Box sx={{ flex: 1 }} />
 
         {state && state.status === 'saving' && (
@@ -155,10 +279,12 @@ export default function ScenarioScreen({ relativePath, title, workspacePath, onB
           <ToggleButton value="yaml" sx={{ textTransform: 'none', px: 1.2 }}>YAML</ToggleButton>
         </ToggleButtonGroup>
 
-        <Button size="small" startIcon={<AddIcon />} onClick={() => setStepOpen(true)}>
-          Добавить шаг
-        </Button>
-        <Tooltip title={shotCount ? 'Открыть скриншоты' : 'Скриншоты появятся после прогона'}>
+        <Tooltip title="Добавить шаг (Ctrl+N)">
+          <Button size="small" startIcon={<AddIcon />} onClick={() => setStepOpen(true)}>
+            Шаг
+          </Button>
+        </Tooltip>
+        <Tooltip title="Скриншоты прогона">
           <span>
             <Button
               size="small"
@@ -166,20 +292,57 @@ export default function ScenarioScreen({ relativePath, title, workspacePath, onB
               onClick={() => setShotsOpen(true)}
               disabled={shotCount === 0}
             >
-              Скриншоты{shotCount ? ` · ${shotCount}` : ''}
+              {shotCount ? `Кадры · ${shotCount}` : 'Кадры'}
             </Button>
           </span>
         </Tooltip>
-        <Button
-          variant="contained"
-          size="small"
-          startIcon={<PlayArrowIcon />}
-          onClick={handleRun}
-          disabled={Boolean(run && run.running)}
-        >
-          {run && run.running ? 'Running…' : 'Run'}
-        </Button>
+        <Tooltip title={`Убрать артефакты (${formatBytes(artifacts.bytes)})`}>
+          <IconButton size="small" onClick={() => setCleanOpen(true)} aria-label="Очистить скриншоты">
+            <CleaningServicesIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Переименовать">
+          <IconButton
+            size="small"
+            onClick={() => {
+              setNewName(relativePath.split('/').pop().replace(/\.ya?ml$/i, ''));
+              setRenameOpen(true);
+            }}
+            aria-label="Переименовать сценарий"
+          >
+            <EditIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Удалить сценарий">
+          <IconButton size="small" onClick={() => setDeleteOpen(true)} aria-label="Удалить сценарий">
+            <DeleteOutlineIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Запустить (Ctrl+R)">
+          <span>
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<PlayArrowIcon />}
+              onClick={handleRun}
+              disabled={Boolean(run && run.running) || errorCount > 0}
+            >
+              {run && run.running ? 'Running…' : 'Run'}
+            </Button>
+          </span>
+        </Tooltip>
       </Box>
+
+      {actionError && (
+        <Alert severity="info" onClose={() => setActionError(null)} sx={{ borderRadius: 0 }}>
+          {actionError}
+        </Alert>
+      )}
+      {errorCount > 0 && (
+        <Alert severity="error" sx={{ borderRadius: 0 }}>
+          Запуск заблокирован: исправьте ошибки в сценарии. Нажмите на счётчик проверки, чтобы увидеть список.
+        </Alert>
+      )}
 
       <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
         {mode === 'yaml' ? (
@@ -189,14 +352,7 @@ export default function ScenarioScreen({ relativePath, title, workspacePath, onB
         )}
       </Box>
 
-      <Box
-        sx={{
-          borderTop: '1px solid',
-          borderColor: 'divider',
-          flexShrink: 0,
-          bgcolor: 'background.paper',
-        }}
-      >
+      <Box sx={{ borderTop: '1px solid', borderColor: 'divider', flexShrink: 0, bgcolor: 'background.paper' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.5 }}>
           <Typography variant="subtitle2" sx={{ flex: 1 }}>Отчёт</Typography>
           {run && run.result && (
@@ -221,7 +377,7 @@ export default function ScenarioScreen({ relativePath, title, workspacePath, onB
             <Box sx={{ maxHeight: 220, overflow: 'auto', px: 1.5, py: 1 }}>
               {!run && (
                 <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                  Прогонов ещё не было. Нажмите Run — здесь появятся шаги и ошибки.
+                  Прогонов ещё не было. Нажмите Run или Ctrl+R.
                 </Typography>
               )}
               {run && run.running && <Typography variant="body2">Выполняется…</Typography>}
@@ -244,17 +400,81 @@ export default function ScenarioScreen({ relativePath, title, workspacePath, onB
         )}
       </Box>
 
+      <Popover
+        open={Boolean(issuesAnchor)}
+        anchorEl={issuesAnchor}
+        onClose={() => setIssuesAnchor(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+      >
+        <Box sx={{ p: 2, maxWidth: 460 }}>
+          <Typography variant="subtitle2" sx={{ mb: 1 }}>Проверка сценария</Typography>
+          {issues.issues.length === 0 && (
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>Замечаний нет.</Typography>
+          )}
+          {issues.issues.map((issue, index) => (
+            <Typography
+              key={index}
+              variant="body2"
+              sx={{ color: issue.severity === 'error' ? 'error.main' : 'warning.main', mb: 0.5 }}
+            >
+              {issue.severity === 'error' ? '✗' : '!'} {issue.message}
+            </Typography>
+          ))}
+        </Box>
+      </Popover>
+
       <StepDialog
         open={stepOpen}
         onClose={() => setStepOpen(false)}
-        text={text}
-        onAppend={setText}
+        onSave={(step) => addStep(step)}
       />
-      <ScreenshotCarousel
-        open={shotsOpen}
-        onClose={() => setShotsOpen(false)}
-        images={run && run.images ? run.images : []}
-      />
+      <ScreenshotCarousel open={shotsOpen} onClose={() => setShotsOpen(false)} images={run && run.images ? run.images : []} />
+
+      <Dialog open={cleanOpen} onClose={() => setCleanOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>Очистить скриншоты</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2">
+            Прогонов в папке artifacts: {artifacts.runs}, файлов: {artifacts.files}, всего {formatBytes(artifacts.bytes)}.
+          </Typography>
+          <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>
+            Удаляются кадры и трассы всех прогонов рабочей папки.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCleanOpen(false)} sx={{ color: 'text.secondary' }}>Отмена</Button>
+          <Button color="error" variant="contained" onClick={clean}>Удалить</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={renameOpen} onClose={() => setRenameOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>Переименовать сценарий</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            fullWidth
+            size="small"
+            label="Имя файла"
+            value={newName}
+            onChange={(event) => setNewName(event.target.value)}
+            sx={{ mt: 1 }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRenameOpen(false)} sx={{ color: 'text.secondary' }}>Отмена</Button>
+          <Button variant="contained" onClick={rename}>Переименовать</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={deleteOpen} onClose={() => setDeleteOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>Удалить сценарий?</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2">{relativePath} будет удалён с диска.</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteOpen(false)} sx={{ color: 'text.secondary' }}>Отмена</Button>
+          <Button color="error" variant="contained" onClick={remove}>Удалить</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

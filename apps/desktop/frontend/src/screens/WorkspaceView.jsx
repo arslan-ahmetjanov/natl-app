@@ -3,6 +3,7 @@ import {
   Box,
   Button,
   Divider,
+  Fade,
   IconButton,
   List,
   ListItemButton,
@@ -25,6 +26,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LlmSettingsDialog from '../components/LlmSettingsDialog';
+import OnboardingDialog from '../components/OnboardingDialog';
 import RecordScenarioDialog from '../components/RecordScenarioDialog';
 import WindowControls from '../components/WindowControls';
 import AiChatScreen from './AiChatScreen';
@@ -101,7 +103,7 @@ export default function WorkspaceView({
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', bgcolor: 'background.default' }}>
       <WindowControls
-        title="NATL"
+        title="NATL IDE"
         subtitle={workspace?.title || workspacePath}
         right={(
           <>
@@ -187,34 +189,46 @@ export default function WorkspaceView({
         </Box>
 
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-          {view === 'dashboard' && (
-            <DashboardScreen
-              workspacePath={workspacePath}
-              onOpen={openScenario}
-              onRecord={() => setRecordOpen(true)}
-              onOpenList={() => setView('scenarios')}
-            />
-          )}
-          {view === 'scenarios' && (
-            <ScenariosListScreen
-              onOpen={openScenario}
-              onRecord={() => setRecordOpen(true)}
-              refreshToken={refreshToken}
-            />
-          )}
-          {view === 'scenario' && selected && (
-            <ScenarioScreen
-              relativePath={selected.relativePath}
-              title={selected.title}
-              workspacePath={workspacePath}
-              onBack={() => {
-                setView('scenarios');
-                setSelected(null);
-              }}
-            />
-          )}
-          {view === 'logs' && <LogsScreen />}
-          {view === 'resources' && <Box sx={{ flex: 1, display: 'flex', minHeight: 0 }}><ResourcesScreen /></Box>}
+          <Fade in key={view} timeout={180}>
+            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+              {view === 'dashboard' && (
+                <DashboardScreen
+                  workspacePath={workspacePath}
+                  onOpen={openScenario}
+                  onRecord={() => setRecordOpen(true)}
+                  onOpenList={() => setView('scenarios')}
+                />
+              )}
+              {view === 'scenarios' && (
+                <ScenariosListScreen
+                  onOpen={openScenario}
+                  onRecord={() => setRecordOpen(true)}
+                  refreshToken={refreshToken}
+                />
+              )}
+              {view === 'scenario' && selected && (
+                <ScenarioScreen
+                  relativePath={selected.relativePath}
+                  title={selected.title}
+                  workspacePath={workspacePath}
+                  onBack={() => {
+                    setView('scenarios');
+                    setSelected(null);
+                  }}
+                  onRenamed={(nextPath, nextTitle) => {
+                    setSelected({ relativePath: nextPath, title: nextTitle });
+                    setRefreshToken((value) => value + 1);
+                  }}
+                />
+              )}
+              {view === 'logs' && <LogsScreen />}
+              {view === 'resources' && (
+                <Box sx={{ flex: 1, display: 'flex', minHeight: 0 }}>
+                  <ResourcesScreen />
+                </Box>
+              )}
+            </Box>
+          </Fade>
         </Box>
 
         <Box
@@ -273,6 +287,7 @@ export default function WorkspaceView({
         }}
       />
       <LlmSettingsDialog open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <OnboardingDialog />
     </Box>
   );
 }
