@@ -111,6 +111,10 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
 
+// Logs first: this wraps ipcMain.handle, so every later handler is covered.
+const { registerLogsIpc } = require('./ipc/logs');
+registerLogsIpc();
+
 // Register file-store workspace IPC (pages, tests, meta)
 registerWorkspaceIpc();
 

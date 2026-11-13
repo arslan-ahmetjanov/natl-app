@@ -9,6 +9,7 @@ const store = require('../natl/store');
 const { saveScenario } = require('../natl/save');
 const { runScenario, assertInsideWorkspace } = require('../natl/run');
 const { startRecording } = require('../natl/recorder');
+const { getStore } = require('./logs');
 
 /** One recorder at a time: a second browser would fight the first for events. */
 let recorder = null;
@@ -31,27 +32,55 @@ function registerNatlIpc() {
     const test = filestore.readTest(root, testId);
     if (!test) throw new Error(`Test not found: ${testId}`);
 
-    return saveScenario({
+    const saved = saveScenario({
       root,
       test,
       actions: filestore.readActions(root) || [],
       pages: filestore.listPages(root),
       ...options,
     });
+    getStore().info('natl', `сценарий сохранён: ${saved.relativePath}`, {
+      unsupported: saved.unsupported.length,
+    });
+    return saved;
   });
 
   ipcMain.handle('natl:runScenario', async (event, filePath, options = {}) => {
     const root = currentRoot();
     const sender = event.sender;
 
-    return runScenario({
-      root,
-      file: filePath,
-      ...options,
-      onProgress: (payload) => {
-        if (!sender.isDestroyed()) sender.send('main:natl-run-progress', payload);
-      },
-    });
+    const log = getStore();
+    log.info('runner', `прогон начат: ${path.basename(filePath)}`);
+
+    try {
+      const result = await runScenario({
+        root,
+        file: filePath,
+        ...options,
+        onProgress: (payload) => {
+          if (payload.type === 'step-end' && !payload.ok) {
+            log.warn('runner', `шаг упал: ${payload.name}`, { error: payload.error });
+          }
+          if (!sender.isDestroyed()) sender.send('main:natl-run-progress', payload);
+        },
+      });
+
+      if (result.ok) {
+        log.info('runner', `прогон прошёл за ${result.durationMs} мс`, {
+          steps: (result.steps || []).length,
+        });
+      } else {
+        log.error('runner', `прогон упал: ${result.error || 'без текста'}`, {
+          durationMs: result.durationMs,
+        });
+      }
+      return result;
+    } catch (err) {
+      log.error('runner', `прогон не запустился: ${err && err.message ? err.message : err}`, {
+        stack: err && err.stack,
+      });
+      throw err;
+    }
   });
 
   ipcMain.handle('natl:readScreenshot', async (_, filePath) => {
@@ -75,6 +104,7 @@ function registerNatlIpc() {
       },
     });
     recorder = handle;
+    getStore().info('recorder', `запись начата: ${handle.url}`);
     return { url: handle.url, warnings: handle.warnings };
   });
 
@@ -82,7 +112,11 @@ function registerNatlIpc() {
     if (!recorder) throw new Error('Запись не запущена');
     const handle = recorder;
     recorder = null;
-    return handle.stop({ name: options.name });
+    const result = await handle.stop({ name: options.name });
+    getStore().info('recorder', `запись остановлена, шагов: ${result.steps.length}`, {
+      warnings: result.warnings.length,
+    });
+    return result;
   });
 
   ipcMain.handle('natl:recordCancel', async () => {
@@ -90,6 +124,7 @@ function registerNatlIpc() {
     const handle = recorder;
     recorder = null;
     await handle.close();
+    getStore().info('recorder', 'запись отменена');
     return { cancelled: true };
   });
 

@@ -76,6 +76,18 @@ contextBridge.exposeInMainWorld('electronAPI', {
   reportsGetScreenshot: (reportId, filename) => ipcRenderer.invoke('reports:getScreenshot', reportId, filename),
   reportsDelete: (reportId) => ipcRenderer.invoke('reports:delete', reportId),
   parsePage: (source, viewport, requestOptions) => ipcRenderer.invoke('parser:parsePage', source, viewport, requestOptions),
+  // Logs
+  logsList: (filter) => ipcRenderer.invoke('logs:list', filter || {}),
+  logsClear: () => ipcRenderer.invoke('logs:clear'),
+  logsWrite: (entry) => ipcRenderer.invoke('logs:write', entry || {}),
+  logsText: (filter) => ipcRenderer.invoke('logs:text', filter || {}),
+  logsPath: () => ipcRenderer.invoke('logs:path'),
+  logsOpenFile: () => ipcRenderer.invoke('logs:openFile'),
+  onLogEntry: (cb) => {
+    const fn = (_, entry) => cb(entry);
+    ipcRenderer.on('main:log-entry', fn);
+    return () => ipcRenderer.removeListener('main:log-entry', fn);
+  },
   // NATL scenario files (YAML)
   natlSaveScenario: (testId, options) => ipcRenderer.invoke('natl:saveScenario', testId, options || {}),
   natlRunScenario: (filePath, options) => ipcRenderer.invoke('natl:runScenario', filePath, options || {}),

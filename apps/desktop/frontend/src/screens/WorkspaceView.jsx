@@ -35,7 +35,9 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import AllInclusiveIcon from '@mui/icons-material/AllInclusive';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
+import BugReportIcon from '@mui/icons-material/BugReport';
 import RecordScenarioDialog from '../components/RecordScenarioDialog';
+import LogsScreen from './LogsScreen';
 import HomeIcon from '@mui/icons-material/Home';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
@@ -466,6 +468,10 @@ export default function WorkspaceView({ workspacePath, workspace, pages, themeMo
           setView('ai');
           clearSubSelection();
         })}
+        {navItem(<BugReportIcon fontSize="small" />, 'Logs', view === 'logs', () => {
+          setView('logs');
+          clearSubSelection();
+        })}
       </List>
     </Paper>
   );
@@ -647,6 +653,9 @@ export default function WorkspaceView({ workspacePath, workspace, pages, themeMo
               onBack={() => setView('list')}
               onRefresh={onRefresh}
             />
+          )}
+          {view === 'logs' && (
+            <LogsScreen onBack={() => setView('list')} />
           )}
           {view === 'report' && (
             <ReportView reportId={reportId} onBack={() => setView('list')} onRefresh={onRefresh} />
