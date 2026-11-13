@@ -36,6 +36,7 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { parse, stringify } from 'yaml';
 import YamlEditor from '../components/YamlEditor';
 import StepDialog from '../components/StepDialog';
+import { humanizeError } from '../utils/errors';
 
 const AUTOSAVE_MS = 700;
 
@@ -122,7 +123,7 @@ export default function ResourcesScreen() {
       setText(stringify(next, { lineWidth: 0 }));
       setError(null);
     } catch (err) {
-      setError(err.message || String(err));
+      setError(humanizeError(err));
     }
   };
 
@@ -232,7 +233,7 @@ export default function ResourcesScreen() {
       await load();
       open({ relativePath: result.relativePath, fileName: result.fileName });
     } catch (err) {
-      setError(err.message || String(err));
+      setError(humanizeError(err));
     }
   };
 
@@ -245,7 +246,7 @@ export default function ResourcesScreen() {
       setSaved('');
       await load();
     } catch (err) {
-      setError(err.message || String(err));
+      setError(humanizeError(err));
     }
   };
 
@@ -276,7 +277,7 @@ export default function ResourcesScreen() {
                   await load();
                   open({ relativePath: created.relativePath, fileName: created.fileName });
                 } catch (err) {
-                  setError(err.message || String(err));
+                  setError(humanizeError(err));
                 }
               }}
             >

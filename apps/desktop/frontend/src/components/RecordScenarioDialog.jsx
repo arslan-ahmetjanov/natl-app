@@ -13,6 +13,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import { humanizeError } from '../utils/errors';
 
 /**
  * Record a path through the app and save it as a NATL scenario.
@@ -73,7 +74,7 @@ export default function RecordScenarioDialog({ open, onClose, onSaved }) {
       await window.electronAPI.natlRecordStart({ url });
     } catch (err) {
       setRunning(false);
-      setError(err && err.message ? err.message : String(err));
+      setError(humanizeError(err));
     }
   };
 
@@ -93,7 +94,7 @@ export default function RecordScenarioDialog({ open, onClose, onSaved }) {
       if (onSaved) onSaved(saved);
     } catch (err) {
       setRunning(false);
-      setError(err && err.message ? err.message : String(err));
+      setError(humanizeError(err));
     }
   };
 
@@ -107,7 +108,7 @@ export default function RecordScenarioDialog({ open, onClose, onSaved }) {
       setSavedName(name);
       if (onSaved) onSaved(saved);
     } catch (err) {
-      setError(err && err.message ? err.message : String(err));
+      setError(humanizeError(err));
     } finally {
       setSaving(false);
     }

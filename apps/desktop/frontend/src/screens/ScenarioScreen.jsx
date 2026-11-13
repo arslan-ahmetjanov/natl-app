@@ -9,8 +9,10 @@ import {
   DialogContent,
   DialogTitle,
   Divider,
+  FormControlLabel,
   IconButton,
   Popover,
+  Switch,
   TextField,
   ToggleButton,
   ToggleButtonGroup,
@@ -35,9 +37,11 @@ import StepDialog from '../components/StepDialog';
 import ScenarioSteps from '../components/ScenarioSteps';
 import ScreenshotCarousel from '../components/ScreenshotCarousel';
 import { useHotkeys } from '../utils/useHotkeys';
+import { humanizeError, humanizeStep } from '../utils/errors';
 
 const AUTOSAVE_MS = 700;
 const LINT_MS = 500;
+const HEADLESS_KEY = 'natl-headless';
 
 function formatBytes(bytes) {
   if (!bytes) return '0 Б';
@@ -67,6 +71,7 @@ export default function ScenarioScreen({ relativePath, title, workspacePath, onB
   const [artifacts, setArtifacts] = useState({ runs: 0, files: 0, bytes: 0 });
   const [newName, setNewName] = useState('');
   const [actionError, setActionError] = useState(null);
+  const [headless, setHeadless] = useState(() => localStorage.getItem(HEADLESS_KEY) !== '0');
   const timer = useRef(null);
   const lintTimer = useRef(null);
   const api = window.electronAPI;
@@ -127,7 +132,7 @@ export default function ScenarioScreen({ relativePath, title, workspacePath, onB
     setPanelOpen(true);
     setRun({ running: true, result: null, images: [] });
     try {
-      const result = await api.natlRunScenario(`${workspacePath}/${relativePath}`, { headless: true });
+      const result = await api.natlRunScenario(`${workspacePath}/${relativePath}`, { headless });
       const images = [];
       for (const shot of result.screenshots || []) {
         for (const phase of ['before', 'after']) {
@@ -144,12 +149,16 @@ export default function ScenarioScreen({ relativePath, title, workspacePath, onB
           }
         }
       }
-      setRun({ running: false, result, images });
+      setRun({
+        running: false,
+        result: { ...result, steps: (result.steps || []).map((step) => humanizeStep(step)) },
+        images,
+      });
     } catch (err) {
       setRun({
         running: false,
         images: [],
-        result: { ok: false, error: err && err.message ? err.message : String(err), steps: [] },
+        result: { ok: false, error: humanizeError(err, { file: relativePath }), steps: [] },
       });
     }
   };
@@ -172,7 +181,7 @@ export default function ScenarioScreen({ relativePath, title, workspacePath, onB
       setRenameOpen(false);
       if (onRenamed) onRenamed(result.relativePath, result.fileName.replace(/\.ya?ml$/i, ''));
     } catch (err) {
-      setActionError(err.message || String(err));
+      setActionError(humanizeError(err, { file: relativePath }));
     }
   };
 
@@ -182,7 +191,7 @@ export default function ScenarioScreen({ relativePath, title, workspacePath, onB
       setDeleteOpen(false);
       onBack();
     } catch (err) {
-      setActionError(err.message || String(err));
+      setActionError(humanizeError(err, { file: relativePath }));
     }
   };
 
@@ -198,7 +207,7 @@ export default function ScenarioScreen({ relativePath, title, workspacePath, onB
           : 'Нечего удалять',
       );
     } catch (err) {
-      setActionError(err.message || String(err));
+      setActionError(humanizeError(err, { file: relativePath }));
     }
   };
 
@@ -317,6 +326,23 @@ export default function ScenarioScreen({ relativePath, title, workspacePath, onB
           <IconButton size="small" onClick={() => setDeleteOpen(true)} aria-label="Удалить сценарий">
             <DeleteOutlineIcon fontSize="small" />
           </IconButton>
+        </Tooltip>
+        <Tooltip title="Показывать окно браузера при прогоне">
+          <FormControlLabel
+            sx={{ mr: 0 }}
+            control={(
+              <Switch
+                size="small"
+                checked={!headless}
+                onChange={(event) => {
+                  const next = !event.target.checked;
+                  setHeadless(next);
+                  localStorage.setItem(HEADLESS_KEY, next ? '1' : '0');
+                }}
+              />
+            )}
+            label={<Typography variant="caption">С окном</Typography>}
+          />
         </Tooltip>
         <Tooltip title="Запустить (Ctrl+R)">
           <span>

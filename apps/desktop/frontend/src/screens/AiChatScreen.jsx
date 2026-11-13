@@ -10,6 +10,7 @@ import {
   Typography,
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
+import { humanizeError } from '../utils/errors';
 
 const SUGGESTIONS = [
   'Проверь сценарии в tests/ и скажи, какие шаги могут быть нестабильными',
@@ -49,7 +50,7 @@ export default function AiChatScreen({ onOpenSettings }) {
         { role: 'assistant', content: result.reply, calls: result.calls || [] },
       ]);
     } catch (err) {
-      setError(err && err.message ? err.message : String(err));
+      setError(humanizeError(err));
     } finally {
       setBusy(false);
     }
