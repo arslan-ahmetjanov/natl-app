@@ -5,8 +5,8 @@
   function detect() {
     const saved = localStorage.getItem(LANG_KEY);
     if (langs.includes(saved)) return saved;
-    // Docs default to English; other languages are opt-in via the switcher.
-    return "en";
+    // Документация по умолчанию на русском; остальные языки — через переключатель.
+    return "ru";
   }
 
   function lookup(dict, key) {

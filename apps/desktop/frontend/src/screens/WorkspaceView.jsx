@@ -56,7 +56,7 @@ export default function WorkspaceView({
   );
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', bgcolor: 'background.default' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', bgcolor: 'background.default' }}>
       <Paper
         square
         elevation={0}

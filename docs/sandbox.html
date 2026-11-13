@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="ru" data-theme="light">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="NATL sandbox — stable demo page for natl init and first-run tests"
+      content="Песочница NATL — стабильная демо-страница для natl init и первых тестов"
     />
-    <title>Sandbox · NATL test runner</title>
+    <title>Песочница · NATL</title>
     <link rel="icon" href="assets/img/natl-icon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -17,7 +17,7 @@
     />
     <link rel="stylesheet" href="assets/css/site.css" />
     <style>
-      /* Stable demo UI — English copy is intentional (assert contract). */
+      /* Форма остаётся на английском: её тексты — контракт для проверок в YAML. */
       .sandbox-panel {
         max-width: 420px;
         margin: 1.25rem 0 0;
@@ -98,27 +98,27 @@
           <img src="assets/img/natl-icon.svg" alt="" width="42" height="42" />
           <div class="brand-text">
             natl
-            <span data-i18n="meta.tagline">YAML test runner</span>
+            <span data-i18n="meta.tagline">тесты в YAML</span>
           </div>
         </a>
-        <nav class="nav" aria-label="Docs">
-          <a href="index.html" data-i18n="nav.home">Home</a>
-          <a href="getting-started.html" data-i18n="nav.guide">Guide</a>
-          <a href="sandbox.html" data-i18n="nav.sandbox" aria-current="page">Sandbox</a>
-          <a href="agent.html" data-i18n="nav.agent">Agent</a>
-          <a href="troubleshooting.html" data-i18n="nav.troubleshooting">Troubleshooting</a>
-          <a href="canon.html" data-i18n="nav.canon">Canon</a>
-          <a href="architecture.html" data-i18n="nav.architecture">Architecture</a>
-          <a href="adapters.html" data-i18n="nav.adapters">Adapters</a>
+        <nav class="nav" aria-label="Документация">
+          <a href="index.html" data-i18n="nav.home">Главная</a>
+          <a href="getting-started.html" data-i18n="nav.guide">Начало работы</a>
+          <a href="sandbox.html" data-i18n="nav.sandbox" aria-current="page">Песочница</a>
+          <a href="agent.html" data-i18n="nav.agent">Агент</a>
+          <a href="troubleshooting.html" data-i18n="nav.troubleshooting">Ошибки</a>
+          <a href="canon.html" data-i18n="nav.canon">Канон</a>
+          <a href="architecture.html" data-i18n="nav.architecture">Архитектура</a>
+          <a href="adapters.html" data-i18n="nav.adapters">Движки</a>
         </nav>
         <div class="controls">
-          <select data-lang-select aria-label="Language">
-            <option value="en">English</option>
+          <select data-lang-select aria-label="Язык">
             <option value="ru">Русский</option>
+            <option value="en">English</option>
             <option value="zh">中文</option>
             <option value="es">Español</option>
           </select>
-          <button type="button" data-theme-toggle data-light="Light" data-dark="Dark">Dark</button>
+          <button type="button" data-theme-toggle data-light="Светлая" data-dark="Тёмная">Тёмная</button>
         </div>
       </div>
     </header>
@@ -126,10 +126,10 @@
     <main class="shell">
       <!-- No data-page-content: form copy must stay fixed for YAML asserts. -->
       <article class="content">
-        <h1 data-i18n="pages.sandbox.title">Sandbox</h1>
+        <h1 data-i18n="pages.sandbox.title">Песочница</h1>
         <p data-i18n-html="pages.sandbox.lede">
-          Demo app for <code>natl init</code> and first runs. Selectors below are a
-          <strong>stable contract</strong> — do not rename them lightly.
+          Демо-приложение для <code>natl init</code> и первых прогонов. Селекторы ниже —
+          <strong>устойчивый контракт</strong>: переименовывать их без причины нельзя.
         </p>
 
         <div class="sandbox-panel" id="sandbox-root">
@@ -161,14 +161,14 @@
 
         <div class="contract">
           <p data-i18n-html="pages.sandbox.try">
-            <strong>Try:</strong> email <code>demo@natl.dev</code>, password <code>secret</code>.
+            <strong>Попробуйте:</strong> email <code>demo@natl.dev</code>, пароль <code>secret</code>.
           </p>
           <p data-i18n-html="pages.sandbox.contract">
-            Contract:
+            Контракт:
             <code>#email</code>, <code>#password</code>, <code>#login-btn</code>,
             <code>.welcome</code>, <code>#ping-api</code>, <code>#api-status</code>.
             JSON: <a href="sandbox-api.json"><code>sandbox-api.json</code></a>.
-            Offline twin: <code>examples/fixtures/sandbox.html</code>.
+            Офлайн-версия: <code>examples/fixtures/sandbox.html</code>.
           </p>
         </div>
       </article>
@@ -176,7 +176,7 @@
 
     <footer class="footer">
       <div class="shell">
-        <span data-i18n="footer.line">MIT License.</span>
+        <span data-i18n="footer.line">Лицензия MIT.</span>
         · <a href="https://github.com/natl-dev/natl">GitHub</a>
         · <a href="https://www.npmjs.com/package/@natl/cli">npm</a>
       </div>

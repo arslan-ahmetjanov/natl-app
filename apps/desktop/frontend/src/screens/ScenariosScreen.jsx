@@ -5,49 +5,45 @@ import {
   Button,
   Chip,
   Divider,
-  IconButton,
-  List,
-  ListItemButton,
-  ListItemText,
   Paper,
   Tab,
   Tabs,
-  TextField,
-  Tooltip,
   Typography,
+  useTheme,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import RefreshIcon from '@mui/icons-material/Refresh';
+import YamlEditor from '../components/YamlEditor';
+import ScenarioList from './ScenarioList';
+import WorkPanel from './WorkPanel';
 
 const AUTOSAVE_MS = 700;
 
 /**
- * Scenarios, Postman-style: a list of files on the left, tabs above the editor.
- *
- * Tabs exist because a real check is rarely one file: you open the login flow,
- * then the checkout flow, and you keep both while you work. Every tab owns its
- * own editor buffer and its own run result, so switching never loses anything.
+ * The workbench: scenarios on the left, the file in the middle, the working
+ * panel on the right. Building, running and reading the outcome share one
+ * screen — the file is the only source of truth, so nothing is "saved" twice.
  */
 export default function ScenariosScreen({ workspacePath, onRecord, refreshToken = 0 }) {
+  const theme = useTheme();
   const [scenarios, setScenarios] = useState([]);
   const [listError, setListError] = useState(null);
   const [query, setQuery] = useState('');
-  const [tabs, setTabs] = useState([]); // [{ relativePath, name }]
+  const [tabs, setTabs] = useState([]);
   const [activePath, setActivePath] = useState(null);
-  const [buffers, setBuffers] = useState({}); // relativePath -> text
-  const [saved, setSaved] = useState({}); // relativePath -> last saved text
-  const [saveState, setSaveState] = useState({}); // relativePath -> {status, at, message}
-  const [runs, setRuns] = useState({}); // relativePath -> { running, result, images }
+  const [buffers, setBuffers] = useState({});
+  const [saved, setSaved] = useState({});
+  const [saveState, setSaveState] = useState({});
+  const [runs, setRuns] = useState({});
+  const [panelTab, setPanelTab] = useState('build');
   const timers = useRef({});
   const api = window.electronAPI;
 
   const loadList = useCallback(async () => {
     if (!api || !api.natlListScenarios) return;
     try {
-      const list = await api.natlListScenarios();
-      setScenarios(list || []);
+      setScenarios((await api.natlListScenarios()) || []);
       setListError(null);
     } catch (err) {
       setListError(err && err.message ? err.message : String(err));
@@ -66,8 +62,8 @@ export default function ScenariosScreen({ workspacePath, onRecord, refreshToken 
           : [...prev, { relativePath: scenario.relativePath, name: scenario.name }],
       );
       setActivePath(scenario.relativePath);
-
       if (buffers[scenario.relativePath] !== undefined) return;
+
       try {
         const read = await api.natlReadScenario(scenario.relativePath);
         setBuffers((prev) => ({ ...prev, [scenario.relativePath]: read.text || '' }));
@@ -99,7 +95,8 @@ export default function ScenariosScreen({ workspacePath, onRecord, refreshToken 
     });
   };
 
-  // Autosave per tab: the file is the source of truth, every pause writes it.
+  // Autosave per tab. No cleanup that cancels the timer: switching tabs must
+  // not lose an edit, and the next keystroke replaces the timer anyway.
   useEffect(() => {
     if (!activePath) return undefined;
     const text = buffers[activePath];
@@ -121,24 +118,15 @@ export default function ScenariosScreen({ workspacePath, onRecord, refreshToken 
         }));
       }
     }, AUTOSAVE_MS);
-
-    // No cleanup that cancels the timer: switching tabs must not lose an edit.
-    // The next keystroke in the same tab replaces the timer anyway.
     return undefined;
   }, [buffers, saved, activePath, api, loadList]);
-
-  const patchRun = (relativePath, patch) => {
-    setRuns((prev) => ({
-      ...prev,
-      [relativePath]: { running: false, result: null, images: [], ...prev[relativePath], ...patch },
-    }));
-  };
 
   const handleRun = async (relativePath) => {
     const current = runs[relativePath];
     if (!relativePath || (current && current.running)) return;
 
-    patchRun(relativePath, { running: true, result: null, images: [] });
+    setPanelTab('run');
+    setRuns((prev) => ({ ...prev, [relativePath]: { running: true, result: null, images: [] } }));
     try {
       const absolute = `${workspacePath}/${relativePath}`;
       const result = await api.natlRunScenario(absolute, { headless: true });
@@ -146,19 +134,28 @@ export default function ScenariosScreen({ workspacePath, onRecord, refreshToken 
       for (const shot of result.screenshots || []) {
         for (const phase of ['before', 'after']) {
           try {
-            const src = await api.natlReadScreenshot(shot[phase]);
-            images.push({ key: `${shot.index}-${phase}`, step: shot.index, action: shot.action, phase, src });
+            images.push({
+              key: `${shot.index}-${phase}`,
+              step: shot.index,
+              action: shot.action,
+              phase,
+              src: await api.natlReadScreenshot(shot[phase]),
+            });
           } catch {
             /* a missing frame must not hide the result */
           }
         }
       }
-      patchRun(relativePath, { running: false, result, images });
+      setRuns((prev) => ({ ...prev, [relativePath]: { running: false, result, images } }));
     } catch (err) {
-      patchRun(relativePath, {
-        running: false,
-        result: { ok: false, error: err && err.message ? err.message : String(err), steps: [] },
-      });
+      setRuns((prev) => ({
+        ...prev,
+        [relativePath]: {
+          running: false,
+          images: [],
+          result: { ok: false, error: err && err.message ? err.message : String(err), steps: [] },
+        },
+      }));
     }
   };
 
@@ -171,63 +168,31 @@ export default function ScenariosScreen({ workspacePath, onRecord, refreshToken 
     );
   }, [scenarios, query]);
 
-  const activeName = tabs.find((tab) => tab.relativePath === activePath)?.name || '';
   const activeText = activePath ? buffers[activePath] ?? '' : '';
   const activeState = activePath ? saveState[activePath] : null;
-  const activeRun = activePath ? runs[activePath] : null;
 
   return (
-    <Box sx={{ display: 'flex', flex: 1, minHeight: 0, gap: 2, p: 2 }}>
-      <Paper sx={{ width: 300, flexShrink: 0, display: 'flex', flexDirection: 'column', border: '1px solid', borderColor: 'divider' }}>
-        <Box sx={{ p: 1.5, pb: 1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-            <Typography variant="subtitle2" sx={{ flex: 1 }}>Scenarios</Typography>
-            <Tooltip title="Refresh">
-              <IconButton size="small" onClick={loadList}><RefreshIcon fontSize="small" /></IconButton>
-            </Tooltip>
-            <Tooltip title="Record a new scenario">
-              <IconButton size="small" onClick={onRecord}><AddIcon fontSize="small" /></IconButton>
-            </Tooltip>
-          </Box>
-          <TextField
-            size="small"
-            fullWidth
-            placeholder="Поиск"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-          />
-        </Box>
-        <Divider />
-        <List dense sx={{ overflow: 'auto', flex: 1 }}>
-          {filtered.map((scenario) => (
-            <ListItemButton
-              key={scenario.relativePath}
-              selected={activePath === scenario.relativePath}
-              onClick={() => openScenario(scenario)}
-            >
-              <ListItemText
-                primary={scenario.name}
-                secondary={scenario.relativePath}
-                slotProps={{
-                  primary: { noWrap: true },
-                  secondary: { noWrap: true, sx: { fontSize: 11 } },
-                }}
-              />
-            </ListItemButton>
-          ))}
-          {filtered.length === 0 && (
-            <Box sx={{ p: 2 }}>
-              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                {scenarios.length === 0
-                  ? 'Пока нет сценариев. Нажмите + и запишите первый.'
-                  : 'Ничего не найдено.'}
-              </Typography>
-            </Box>
-          )}
-        </List>
-      </Paper>
+    <Box sx={{ display: 'flex', flex: 1, minHeight: 0, gap: 1.5, p: 1.5 }}>
+      <ScenarioList
+        scenarios={filtered}
+        query={query}
+        onQueryChange={setQuery}
+        activePath={activePath}
+        onOpen={openScenario}
+        onRefresh={loadList}
+        onRecord={onRecord}
+      />
 
-      <Paper sx={{ flex: 1, display: 'flex', flexDirection: 'column', border: '1px solid', borderColor: 'divider', minWidth: 0 }}>
+      <Paper
+        sx={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          border: '1px solid',
+          borderColor: 'divider',
+          minWidth: 0,
+        }}
+      >
         {tabs.length > 0 && (
           <Box sx={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid', borderColor: 'divider' }}>
             <Tabs
@@ -235,13 +200,13 @@ export default function ScenariosScreen({ workspacePath, onRecord, refreshToken 
               onChange={(_, value) => setActivePath(value)}
               variant="scrollable"
               scrollButtons="auto"
-              sx={{ flex: 1, minHeight: 40 }}
+              sx={{ flex: 1, minHeight: 38 }}
             >
               {tabs.map((tab) => (
                 <Tab
                   key={tab.relativePath}
                   value={tab.relativePath}
-                  sx={{ minHeight: 40, textTransform: 'none' }}
+                  sx={{ minHeight: 38, textTransform: 'none' }}
                   label={(
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                       <span>{tab.name}</span>
@@ -264,10 +229,10 @@ export default function ScenariosScreen({ workspacePath, onRecord, refreshToken 
                 variant="contained"
                 startIcon={<PlayArrowIcon />}
                 onClick={() => handleRun(activePath)}
-                disabled={Boolean(activeRun && activeRun.running)}
+                disabled={Boolean(runs[activePath] && runs[activePath].running)}
                 sx={{ mr: 1, whiteSpace: 'nowrap' }}
               >
-                {activeRun && activeRun.running ? 'Running…' : 'Run'}
+                {runs[activePath] && runs[activePath].running ? 'Running…' : 'Run'}
               </Button>
             )}
           </Box>
@@ -286,7 +251,7 @@ export default function ScenariosScreen({ workspacePath, onRecord, refreshToken 
 
         {activePath && (
           <>
-            <Box sx={{ px: 1.5, py: 0.75, display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+            <Box sx={{ px: 1.5, py: 0.5, display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
               <Chip size="small" label={activePath} variant="outlined" />
               <Box sx={{ flex: 1 }} />
               {activeState && activeState.status === 'saving' && (
@@ -302,65 +267,28 @@ export default function ScenariosScreen({ workspacePath, onRecord, refreshToken 
               )}
             </Box>
             <Divider />
-            <Box
-              component="textarea"
-              value={activeText}
-              onChange={(event) =>
-                setBuffers((prev) => ({ ...prev, [activePath]: event.target.value }))
-              }
-              spellCheck={false}
-              sx={{
-                flex: 1,
-                minHeight: 180,
-                width: '100%',
-                resize: 'none',
-                border: 0,
-                outline: 'none',
-                p: 2,
-                fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
-                fontSize: 13,
-                lineHeight: 1.5,
-                bgcolor: 'background.default',
-                color: 'text.primary',
-              }}
-            />
-            {activeRun && (activeRun.result || (activeRun.images && activeRun.images.length > 0)) && (
-              <Box sx={{ borderTop: '1px solid', borderColor: 'divider', maxHeight: '45%', overflow: 'auto', p: 1.5 }}>
-                {activeRun.result && (
-                  <Alert severity={activeRun.result.ok ? 'success' : 'error'} sx={{ mb: 1 }}>
-                    {activeRun.result.ok ? 'Passed' : 'Failed'} in{' '}
-                    {Math.round(activeRun.result.durationMs || 0)} ms
-                    {activeRun.result.error ? ` — ${activeRun.result.error}` : ''}
-                  </Alert>
-                )}
-                <Box component="ol" sx={{ pl: 2, my: 1 }}>
-                  {((activeRun.result && activeRun.result.steps) || []).map((step, index) => (
-                    <li key={`${index}-${step.name}`}>
-                      <Typography variant="body2" sx={{ color: step.ok ? 'success.main' : 'error.main' }}>
-                        {step.ok ? '✓' : '✗'} {step.name}{step.error ? ` — ${step.error}` : ''}
-                      </Typography>
-                    </li>
-                  ))}
-                </Box>
-                {activeRun.images && activeRun.images.length > 0 && (
-                  <Box sx={{ display: 'flex', gap: 1, overflowX: 'auto', pb: 1 }}>
-                    {activeRun.images.map((image) => (
-                      <Box key={image.key} sx={{ flexShrink: 0, width: 200 }}>
-                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                          {image.step} · {image.action} · {image.phase}
-                        </Typography>
-                        <Box component="img" src={image.src} alt="" sx={{ width: '100%', border: '1px solid', borderColor: 'divider', borderRadius: 1 }} />
-                      </Box>
-                    ))}
-                  </Box>
-                )}
-              </Box>
-            )}
+            <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+              <YamlEditor
+                value={activeText}
+                dark={theme.palette.mode === 'dark'}
+                onChange={(next) => setBuffers((prev) => ({ ...prev, [activePath]: next }))}
+              />
+            </Box>
           </>
         )}
 
         {listError && <Alert severity="error" sx={{ m: 2 }}>{listError}</Alert>}
       </Paper>
+
+      <WorkPanel
+        tab={panelTab}
+        onTabChange={setPanelTab}
+        text={activeText}
+        onAppend={(next) => {
+          if (activePath) setBuffers((prev) => ({ ...prev, [activePath]: next }));
+        }}
+        run={activePath ? runs[activePath] : null}
+      />
     </Box>
   );
 }

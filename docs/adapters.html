@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="ru" data-theme="light">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>NATL — YAML test runner</title>
+    <title>Движки · NATL</title>
     <link rel="icon" href="assets/img/natl-icon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -15,49 +15,49 @@
       <div class="shell topbar-inner">
         <a class="brand" href="index.html">
           <img src="assets/img/natl-icon.svg" alt="" width="42" height="42" />
-          <div class="brand-text">natl<span data-i18n="meta.tagline">YAML test runner</span></div>
+          <div class="brand-text">natl<span data-i18n="meta.tagline">тесты в YAML</span></div>
         </a>
-                                                                                                <nav class="nav" aria-label="Docs">
-          <a href="index.html" data-i18n="nav.home">Home</a>
-          <a href="getting-started.html" data-i18n="nav.guide">Guide</a>
-          <a href="sandbox.html" data-i18n="nav.sandbox">Sandbox</a>
-          <a href="agent.html" data-i18n="nav.agent">Agent</a>
-          <a href="troubleshooting.html" data-i18n="nav.troubleshooting">Troubleshooting</a>
-          <a href="canon.html" data-i18n="nav.canon">Canon</a>
-          <a href="architecture.html" data-i18n="nav.architecture">Architecture</a>
-          <a href="adapters.html" data-i18n="nav.adapters" aria-current="page">Adapters</a>
+        <nav class="nav" aria-label="Документация">
+          <a href="index.html" data-i18n="nav.home">Главная</a>
+          <a href="getting-started.html" data-i18n="nav.guide">Начало работы</a>
+          <a href="sandbox.html" data-i18n="nav.sandbox">Песочница</a>
+          <a href="agent.html" data-i18n="nav.agent">Агент</a>
+          <a href="troubleshooting.html" data-i18n="nav.troubleshooting">Ошибки</a>
+          <a href="canon.html" data-i18n="nav.canon">Канон</a>
+          <a href="architecture.html" data-i18n="nav.architecture">Архитектура</a>
+          <a href="adapters.html" data-i18n="nav.adapters" aria-current="page">Движки</a>
         </nav>
         <div class="controls">
-          <select data-lang-select aria-label="Language">
-            <option value="en">English</option>
+          <select data-lang-select aria-label="Язык">
             <option value="ru">Русский</option>
+            <option value="en">English</option>
             <option value="zh">中文</option>
             <option value="es">Español</option>
           </select>
-          <button type="button" data-theme-toggle data-light="Light" data-dark="Dark">Dark</button>
+          <button type="button" data-theme-toggle data-light="Светлая" data-dark="Тёмная">Тёмная</button>
         </div>
       </div>
     </header>
     <main class="shell">
       <article class="content" data-page-content>
-<h1>Adapters</h1>
-<p>The YAML is the contract. Adapters drive a browser — or skip it for HTTP.</p>
+<h1>Движки</h1>
+<p>Контракт — это YAML. Движок управляет браузером или обходится без него, если сценарий только про HTTP.</p>
 <table>
-<thead><tr><th>engine</th><th>Package</th><th>When</th></tr></thead>
+<thead><tr><th>engine</th><th>Пакет</th><th>Когда нужен</th></tr></thead>
 <tbody>
-<tr><td><code>playwright</code></td><td><code>@natl/adapter-playwright</code></td><td>Default</td></tr>
-<tr><td><code>selenium</code></td><td><code>@natl/adapter-selenium</code></td><td>WebDriver / Grid</td></tr>
-<tr><td><code>cypress</code></td><td><code>@natl/adapter-cypress</code></td><td>Cypress teams (MVP)</td></tr>
-<tr><td><code>http</code></td><td>built into <code>@natl/core</code></td><td>API-only</td></tr>
+<tr><td><code>playwright</code></td><td><code>@natl/adapter-playwright</code></td><td>По умолчанию</td></tr>
+<tr><td><code>selenium</code></td><td><code>@natl/adapter-selenium</code></td><td>WebDriver и Grid</td></tr>
+<tr><td><code>cypress</code></td><td><code>@natl/adapter-cypress</code></td><td>Команды на Cypress (MVP)</td></tr>
+<tr><td><code>http</code></td><td>встроен в <code>@natl/core</code></td><td>Только API</td></tr>
 </tbody>
 </table>
 <pre><code>natl run suite.yaml --engine selenium</code></pre>
-<p>UI + HTTP → <code>with: http</code> in the <a href="getting-started.html#http">guide</a>.</p>
+<p>UI вместе с HTTP — блок <code>with: http</code> в <a href="getting-started.html#http">руководстве</a>.</p>
       </article>
     </main>
     <footer class="footer">
       <div class="shell">
-                                                                                                <span data-i18n="footer.line">MIT License.</span>
+        <span data-i18n="footer.line">Лицензия MIT.</span>
         · <a href="https://github.com/natl-dev/natl">GitHub</a>
         · <a href="https://www.npmjs.com/package/@natl/cli">npm</a>
       </div>

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="ru" data-theme="light">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>NATL — YAML test runner</title>
+    <title>Ошибки · NATL</title>
     <link rel="icon" href="assets/img/natl-icon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -15,61 +15,61 @@
       <div class="shell topbar-inner">
         <a class="brand" href="index.html">
           <img src="assets/img/natl-icon.svg" alt="" width="42" height="42" />
-          <div class="brand-text">natl<span data-i18n="meta.tagline">YAML test runner</span></div>
+          <div class="brand-text">natl<span data-i18n="meta.tagline">тесты в YAML</span></div>
         </a>
-                                                                                                <nav class="nav" aria-label="Docs">
-          <a href="index.html" data-i18n="nav.home">Home</a>
-          <a href="getting-started.html" data-i18n="nav.guide">Guide</a>
-          <a href="sandbox.html" data-i18n="nav.sandbox">Sandbox</a>
-          <a href="agent.html" data-i18n="nav.agent">Agent</a>
-          <a href="troubleshooting.html" data-i18n="nav.troubleshooting" aria-current="page">Troubleshooting</a>
-          <a href="canon.html" data-i18n="nav.canon">Canon</a>
-          <a href="architecture.html" data-i18n="nav.architecture">Architecture</a>
-          <a href="adapters.html" data-i18n="nav.adapters">Adapters</a>
+        <nav class="nav" aria-label="Документация">
+          <a href="index.html" data-i18n="nav.home">Главная</a>
+          <a href="getting-started.html" data-i18n="nav.guide">Начало работы</a>
+          <a href="sandbox.html" data-i18n="nav.sandbox">Песочница</a>
+          <a href="agent.html" data-i18n="nav.agent">Агент</a>
+          <a href="troubleshooting.html" data-i18n="nav.troubleshooting" aria-current="page">Ошибки</a>
+          <a href="canon.html" data-i18n="nav.canon">Канон</a>
+          <a href="architecture.html" data-i18n="nav.architecture">Архитектура</a>
+          <a href="adapters.html" data-i18n="nav.adapters">Движки</a>
         </nav>
         <div class="controls">
-          <select data-lang-select aria-label="Language">
-            <option value="en">English</option>
+          <select data-lang-select aria-label="Язык">
             <option value="ru">Русский</option>
+            <option value="en">English</option>
             <option value="zh">中文</option>
             <option value="es">Español</option>
           </select>
-          <button type="button" data-theme-toggle data-light="Light" data-dark="Dark">Dark</button>
+          <button type="button" data-theme-toggle data-light="Светлая" data-dark="Тёмная">Тёмная</button>
         </div>
       </div>
     </header>
     <main class="shell">
       <article class="content" data-page-content>
-<h1>Troubleshooting</h1>
-<p>Common failures and what to check first.</p>
-<h2><code>natl: command not found</code></h2>
+<h1>Частые ошибки</h1>
+<p>Что проверять в первую очередь, когда прогон не идёт.</p>
+<h2><code>natl: команда не найдена</code></h2>
 <pre><code>npm install -g @natl/cli @natl/adapter-playwright
 npm prefix -g
 natl --version</code></pre>
-<h2>Browser / Chromium errors</h2>
+<h2>Ошибки браузера и Chromium</h2>
 <pre><code>npx playwright install chromium
 npx playwright install --with-deps chromium</code></pre>
-<h2><code>FAIL … assert</code> / element not found</h2>
+<h2><code>FAIL … assert</code> или элемент не найден</h2>
 <ul>
-  <li>Is the selector still right?</li>
-  <li>Prefer stable <code>#id</code></li>
-  <li>Check <code>artifacts/</code></li>
+  <li>Селектор всё ещё правильный?</li>
+  <li>Предпочитайте устойчивый <code>#id</code></li>
+  <li>Смотрите папку <code>artifacts/</code>: там скриншоты и трассы</li>
 </ul>
-<h2>YAML indentation</h2>
+<h2>Отступы в YAML</h2>
 <pre><code>- fill: "#email"
   with: $user</code></pre>
-<h2>HTTP examples hang</h2>
+<h2>HTTP-примеры зависают</h2>
 <pre><code>node stubs/echo-server.mjs
 natl run http_only.yaml</code></pre>
-<h2>Wrong engine</h2>
+<h2>Подключился не тот движок</h2>
 <pre><code>natl engines
 npm install -g @natl/adapter-playwright</code></pre>
-<p>Still stuck? <a href="https://github.com/natl-dev/natl/issues">GitHub issues</a>.</p>
+<p>Не помогло? Пишите в <a href="https://github.com/natl-dev/natl/issues">issues на GitHub</a>.</p>
       </article>
     </main>
     <footer class="footer">
       <div class="shell">
-                                                                                                <span data-i18n="footer.line">MIT License.</span>
+        <span data-i18n="footer.line">Лицензия MIT.</span>
         · <a href="https://github.com/natl-dev/natl">GitHub</a>
         · <a href="https://www.npmjs.com/package/@natl/cli">npm</a>
       </div>

@@ -1,7 +1,7 @@
 {
-  "name": "testblox",
+  "name": "natl-desktop-ui",
   "private": true,
-  "version": "1.1.0",
+  "version": "2.4.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,15 +9,16 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "curlconverter": "^4.11.0",
-    "fetch-to-curl": "^0.6.0",
-    "httpsnippet-lite": "^3.0.5",
+    "@codemirror/lang-yaml": "^6.1.1",
+    "@codemirror/theme-one-dark": "^6.1.2",
+    "@emotion/react": "^11.11.0",
+    "@emotion/styled": "^11.11.0",
+    "@mui/icons-material": "^5.15.11",
+    "@mui/material": "^5.15.11",
+    "@uiw/react-codemirror": "^4.23.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "@mui/material": "^5.15.11",
-    "@mui/icons-material": "^5.15.11",
-    "@emotion/react": "^11.11.0",
-    "@emotion/styled": "^11.11.0"
+    "yaml": "^2.5.1"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.1",

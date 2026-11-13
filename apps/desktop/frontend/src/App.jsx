@@ -206,35 +206,40 @@ export default function App() {
   return (
     <ThemeProvider theme={currentTheme}>
       <CssBaseline />
-      <Suspense
-        fallback={
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              minHeight: '100vh',
-              bgcolor: 'background.default',
-            }}
+      <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+        <WindowTitleBar />
+        <Box sx={{ flex: 1, minHeight: 0 }}>
+          <Suspense
+            fallback={
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minHeight: '100vh',
+                  bgcolor: 'background.default',
+                }}
+              >
+                <CircularProgress />
+              </Box>
+            }
           >
-            <CircularProgress />
-          </Box>
-        }
-      >
-        <WorkspaceView
-          workspacePath={workspacePath}
-          workspace={workspace}
-          pages={pages}
-          themeMode={themeMode}
-          onToggleTheme={handleToggleTheme}
-          onRefresh={() => {
-            window.electronAPI.getWorkspaceMeta().then(setWorkspace);
-            window.electronAPI.listPages().then(setPages);
-          }}
-          onOpenFolder={handleOpenFolder}
-          onCloseWorkspace={handleCloseWorkspace}
-        />
-      </Suspense>
+            <WorkspaceView
+              workspacePath={workspacePath}
+              workspace={workspace}
+              pages={pages}
+              themeMode={themeMode}
+              onToggleTheme={handleToggleTheme}
+              onRefresh={() => {
+                window.electronAPI.getWorkspaceMeta().then(setWorkspace);
+                window.electronAPI.listPages().then(setPages);
+              }}
+              onOpenFolder={handleOpenFolder}
+              onCloseWorkspace={handleCloseWorkspace}
+            />
+          </Suspense>
+        </Box>
+      </Box>
     </ThemeProvider>
   );
 }

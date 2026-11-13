@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="ru" data-theme="light">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>NATL — YAML test runner</title>
+    <title>Начало работы · NATL</title>
     <link rel="icon" href="assets/img/natl-icon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -15,77 +15,77 @@
       <div class="shell topbar-inner">
         <a class="brand" href="index.html">
           <img src="assets/img/natl-icon.svg" alt="" width="42" height="42" />
-          <div class="brand-text">natl<span data-i18n="meta.tagline">YAML test runner</span></div>
+          <div class="brand-text">natl<span data-i18n="meta.tagline">тесты в YAML</span></div>
         </a>
-                                                                                                <nav class="nav" aria-label="Docs">
-          <a href="index.html" data-i18n="nav.home">Home</a>
-          <a href="getting-started.html" data-i18n="nav.guide" aria-current="page">Guide</a>
-          <a href="sandbox.html" data-i18n="nav.sandbox">Sandbox</a>
-          <a href="agent.html" data-i18n="nav.agent">Agent</a>
-          <a href="troubleshooting.html" data-i18n="nav.troubleshooting">Troubleshooting</a>
-          <a href="canon.html" data-i18n="nav.canon">Canon</a>
-          <a href="architecture.html" data-i18n="nav.architecture">Architecture</a>
-          <a href="adapters.html" data-i18n="nav.adapters">Adapters</a>
+        <nav class="nav" aria-label="Документация">
+          <a href="index.html" data-i18n="nav.home">Главная</a>
+          <a href="getting-started.html" data-i18n="nav.guide" aria-current="page">Начало работы</a>
+          <a href="sandbox.html" data-i18n="nav.sandbox">Песочница</a>
+          <a href="agent.html" data-i18n="nav.agent">Агент</a>
+          <a href="troubleshooting.html" data-i18n="nav.troubleshooting">Ошибки</a>
+          <a href="canon.html" data-i18n="nav.canon">Канон</a>
+          <a href="architecture.html" data-i18n="nav.architecture">Архитектура</a>
+          <a href="adapters.html" data-i18n="nav.adapters">Движки</a>
         </nav>
         <div class="controls">
-          <select data-lang-select aria-label="Language">
-            <option value="en">English</option>
+          <select data-lang-select aria-label="Язык">
             <option value="ru">Русский</option>
+            <option value="en">English</option>
             <option value="zh">中文</option>
             <option value="es">Español</option>
           </select>
-          <button type="button" data-theme-toggle data-light="Light" data-dark="Dark">Dark</button>
+          <button type="button" data-theme-toggle data-light="Светлая" data-dark="Тёмная">Тёмная</button>
         </div>
       </div>
     </header>
     <main class="shell">
       <article class="content" data-page-content>
-<h1>Guide</h1>
-<p>How to write and run <strong>UI and API tests</strong> with NATL. Start with install, get a green run, then work through the language. Jump around later with the list below.</p>
+<h1>Руководство</h1>
+<p>Как писать и запускать <strong>UI- и API-тесты</strong> в NATL. Сначала установка и зелёный прогон, потом язык по блокам. Ниже — содержание, можно прыгать по разделам.</p>
 
-<nav class="course-toc" aria-label="Contents">
-  <h2>Contents</h2>
+<nav class="course-toc" aria-label="Содержание">
+  <h2>Содержание</h2>
   <ol>
-    <li><a href="#install">Install</a></li>
-    <li><a href="#first-run">First run</a></li>
-    <li><a href="#anatomy">Scenario shape</a></li>
-    <li><a href="#config">Project config and env</a></li>
-    <li><a href="#ui">UI steps</a></li>
-    <li><a href="#assert">Assert</a></li>
-    <li><a href="#extract">Read values, set, log, screenshot</a></li>
-    <li><a href="#gestures">Scroll, swipe, long press</a></li>
-    <li><a href="#vars">Variables, secrets, expressions</a></li>
-    <li><a href="#pom">Page objects</a></li>
-    <li><a href="#cases">Cases and data</a></li>
+    <li><a href="#install">Установка</a></li>
+    <li><a href="#first-run">Первый прогон</a></li>
+    <li><a href="#anatomy">Из чего состоит сценарий</a></li>
+    <li><a href="#config">Конфиг проекта и окружения</a></li>
+    <li><a href="#ui">Шаги UI</a></li>
+    <li><a href="#assert">Проверки</a></li>
+    <li><a href="#extract">Чтение значений, set, log, скриншот</a></li>
+    <li><a href="#gestures">Прокрутка, свайп, долгое нажатие</a></li>
+    <li><a href="#vars">Переменные, секреты, выражения</a></li>
+    <li><a href="#pom">Объекты страниц</a></li>
+    <li><a href="#cases">Кейсы и данные</a></li>
     <li><a href="#http">HTTP</a></li>
     <li><a href="#flow">if / for / repeat / parallel</a></li>
-    <li><a href="#cli">Tags, retries, CLI</a></li>
-    <li><a href="#sugar">How to write steps</a></li>
-    <li><a href="#next">Where to go next</a></li>
+    <li><a href="#cli">Теги, повторы, CLI</a></li>
+    <li><a href="#sugar">Как писать шаги</a></li>
+    <li><a href="#next">Куда дальше</a></li>
   </ol>
 </nav>
 
-<h2 id="install">Install</h2>
-<p>You need Node.js 18 or newer.</p>
+<h2 id="install">Установка</h2>
+<p>Нужен Node.js 18 или новее.</p>
 <pre><code>npm install -g @natl/cli @natl/adapter-playwright
 npx playwright install chromium
 natl --version</code></pre>
-<p>If that prints a version, you are set. If not, see <a href="troubleshooting.html">Troubleshooting</a>.</p>
-<p>To start a project from scratch (example hits the live <a href="sandbox.html">sandbox</a>):</p>
+<p>Если вывелась версия — всё готово. Если нет, смотрите раздел <a href="troubleshooting.html">Ошибки</a>.</p>
+<p>Начать проект с нуля (пример открывает живую <a href="sandbox.html">песочницу</a>):</p>
 <pre><code>mkdir my-tests &amp;&amp; cd my-tests
 natl init
 natl run tests/</code></pre>
-<p>Credentials for the sandbox: <code>demo@natl.dev</code> / <code>secret</code>. Offline twin: <code>examples/fixtures/sandbox.html</code> in the repo (set <code>base_url</code> in <code>natl.config.yaml</code>).</p>
+<p>Доступ к песочнице: <code>demo@natl.dev</code> / <code>secret</code>. Офлайн-версия рядом с проектом: <code>examples/fixtures/sandbox.html</code> (задайте <code>base_url</code> в <code>natl.config.yaml</code>).</p>
 
-<h2 id="first-run">First run</h2>
-<p>After <code>natl init</code>, <code>natl run tests/</code> opens the docs sandbox, logs in, and pings a static JSON API. You need network for the Pages URL (or point <code>base_url</code> at the local fixture).</p>
-<p>There is also a login example in the repo that uses a local HTML file:</p>
+<h2 id="first-run">Первый прогон</h2>
+<p>После <code>natl init</code> команда <code>natl run tests/</code> открывает песочницу, входит и дергает статический JSON API. Для адреса на GitHub Pages нужен интернет, либо направьте <code>base_url</code> на локальную копию.</p>
+<p>В репозитории есть пример входа на локальном HTML-файле:</p>
 <pre><code>git clone https://github.com/natl-dev/natl.git
 cd natl/examples
 natl run login.yaml</code></pre>
-<p>You should see <code>PASS</code>. Change the assert text to something wrong, run again, read the error, then put it back. That is the fastest way to see how failures look.</p>
+<p>Должно появиться <code>PASS</code>. Испортите текст проверки, запустите снова, прочитайте ошибку и верните как было. Это самый быстрый способ увидеть, как выглядит падение.</p>
 
-<h2 id="anatomy">Scenario shape</h2>
+<h2 id="anatomy">Из чего состоит сценарий</h2>
 <pre><code>name: Sandbox login smoke
 engine: playwright
 tags: [smoke]
@@ -104,30 +104,30 @@ steps:
   - click: "#login-btn"
   - assert: ".welcome"
     text: "Welcome, demo"</code></pre>
-<p>Fields at the top of a file:</p>
+<p>Поля в начале файла:</p>
 <table>
-<thead><tr><th>Field</th><th>What it does</th></tr></thead>
+<thead><tr><th>Поле</th><th>Что делает</th></tr></thead>
 <tbody>
-<tr><td><code>name</code></td><td>Shown in the report; used by <code>--grep</code></td></tr>
-<tr><td><code>tags</code></td><td>Used with <code>--tags</code></td></tr>
-<tr><td><code>engine</code></td><td><code>playwright</code>, <code>selenium</code>, <code>cypress</code>, or <code>http</code></td></tr>
-<tr><td><code>timeout</code></td><td>Default step timeout in milliseconds</td></tr>
-<tr><td><code>retries</code></td><td>How many extra full runs after a failure</td></tr>
-<tr><td><code>vars</code></td><td>Values you use as <code>$name</code></td></tr>
-<tr><td><code>secrets</code></td><td>Where to load secrets from</td></tr>
-<tr><td><code>imports</code></td><td>Other YAML files to pull in</td></tr>
-<tr><td><code>elements</code> / <code>actions</code></td><td>Page-object locators and named flows</td></tr>
-<tr><td><code>locator_strategy</code></td><td>Default for string selectors: <code>css</code> or <code>xpath</code></td></tr>
-<tr><td><code>cases</code></td><td>One run per row</td></tr>
-<tr><td><code>data</code></td><td>Array available as <code>$data</code> for <code>for:</code></td></tr>
-<tr><td><code>before_each</code> / <code>after_each</code></td><td>Run around <code>steps</code> on each attempt</td></tr>
-<tr><td><code>steps</code></td><td>The steps themselves</td></tr>
+<tr><td><code>name</code></td><td>Показывается в отчёте; по нему работает <code>--grep</code></td></tr>
+<tr><td><code>tags</code></td><td>Используются с <code>--tags</code></td></tr>
+<tr><td><code>engine</code></td><td><code>playwright</code>, <code>selenium</code>, <code>cypress</code> или <code>http</code></td></tr>
+<tr><td><code>timeout</code></td><td>Таймаут шага по умолчанию, в миллисекундах</td></tr>
+<tr><td><code>retries</code></td><td>Сколько раз повторять сценарий целиком после падения</td></tr>
+<tr><td><code>vars</code></td><td>Значения, к которым обращаетесь как <code>$name</code></td></tr>
+<tr><td><code>secrets</code></td><td>Откуда брать секреты</td></tr>
+<tr><td><code>imports</code></td><td>Другие YAML-файлы, которые подключаются</td></tr>
+<tr><td><code>elements</code> / <code>actions</code></td><td>Локаторы объектов страниц и именованные сценарии</td></tr>
+<tr><td><code>locator_strategy</code></td><td>Стратегия для строковых селекторов: <code>css</code> или <code>xpath</code></td></tr>
+<tr><td><code>cases</code></td><td>Отдельный прогон на каждую строку</td></tr>
+<tr><td><code>data</code></td><td>Массив, доступный как <code>$data</code> для <code>for:</code></td></tr>
+<tr><td><code>before_each</code> / <code>after_each</code></td><td>Шаги до и после основного блока на каждой попытке</td></tr>
+<tr><td><code>steps</code></td><td>Сами шаги</td></tr>
 </tbody>
 </table>
-<p>A single step can also set <code>timeout</code>, <code>save</code>, or <code>debug</code>. To change engine in the middle of a run, wrap steps in <code>with:</code>. A bare <code>engine:</code> on one step is not what switches context.</p>
+<p>Отдельный шаг тоже может задавать <code>timeout</code>, <code>save</code> или <code>debug</code>. Чтобы сменить движок посреди прогона, оберните шаги в <code>with:</code>. Один <code>engine:</code> у шага контекст не переключает.</p>
 
-<h2 id="config">Project config and env</h2>
-<p>Defaults live in <code>natl.config.yaml</code> next to your tests (NATL walks up from the file until it finds one):</p>
+<h2 id="config">Конфиг проекта и окружения</h2>
+<p>Значения по умолчанию живут в <code>natl.config.yaml</code> рядом с тестами (NATL ищет файл вверх по дереву папок):</p>
 <pre><code>engine: playwright
 browser: chromium
 timeout: 15000
@@ -140,22 +140,22 @@ retries: 0
 trace: on-fail
 video: off
 soft_assert_screenshot: false</code></pre>
-<p>Different stands without editing every scenario:</p>
+<p>Разные стенды без правки каждого сценария:</p>
 <pre><code>natl run tests/ --env staging
 natl run tests/ --config config/prod.yaml</code></pre>
-<p><code>--env staging</code> loads <code>config/staging.yaml</code>. Do not pass both <code>--env</code> and <code>--config</code>.</p>
-<p>What wins, from strongest to weakest: CLI flags, then fields in the test file, then the env profile, then <code>natl.config.yaml</code>, then built-in defaults.</p>
+<p><code>--env staging</code> загружает <code>config/staging.yaml</code>. Передавать <code>--env</code> и <code>--config</code> одновременно нельзя.</p>
+<p>Приоритет от сильного к слабому: флаги CLI, поля в файле теста, профиль окружения, <code>natl.config.yaml</code>, встроенные значения.</p>
 
-<h2 id="ui">UI steps</h2>
+<h2 id="ui">Шаги UI</h2>
 <table>
-<thead><tr><th>Step</th><th>Notes</th></tr></thead>
+<thead><tr><th>Шаг</th><th>Замечания</th></tr></thead>
 <tbody>
-<tr><td><code>goto</code></td><td>http(s) URL, <code>file://</code>, or a relative path to a local file</td></tr>
-<tr><td><code>click</code> / <code>tap</code></td><td>Same action. I write <code>click:</code></td></tr>
-<tr><td><code>fill</code></td><td>Locator, then <code>with:</code> for the value</td></tr>
-<tr><td><code>select</code></td><td>Locator and option value via <code>with:</code></td></tr>
-<tr><td><code>check</code> / <code>uncheck</code></td><td>Checkbox / radio</td></tr>
-<tr><td><code>wait</code></td><td>A delay in ms, or a selector with <code>visible</code>, <code>hidden</code>, <code>attached</code>, or <code>detached</code></td></tr>
+<tr><td><code>goto</code></td><td>Адрес http(s), <code>file://</code> или относительный путь к локальному файлу</td></tr>
+<tr><td><code>click</code> / <code>tap</code></td><td>Одно и то же действие. Пишу <code>click:</code></td></tr>
+<tr><td><code>fill</code></td><td>Локатор, затем <code>with:</code> со значением</td></tr>
+<tr><td><code>select</code></td><td>Локатор и значение варианта через <code>with:</code></td></tr>
+<tr><td><code>check</code> / <code>uncheck</code></td><td>Флажок и переключатель</td></tr>
+<tr><td><code>wait</code></td><td>Задержка в мс или селектор с <code>visible</code>, <code>hidden</code>, <code>attached</code>, <code>detached</code></td></tr>
 </tbody>
 </table>
 <pre><code>- goto: $base_url
@@ -167,11 +167,11 @@ natl run tests/ --config config/prod.yaml</code></pre>
 - click: "#submit"
 - wait: 500
 - wait: ".modal hidden"</code></pre>
-<p>Clicks, fills, and asserts already wait for the target up to <code>timeout</code>. You rarely need <code>wait: ".ok visible"</code> right before an assert. Keep <code>wait:</code> for delays or states like <code>hidden</code>.</p>
+<p>Клики, ввод и проверки сами ждут элемент до <code>timeout</code>. Писать <code>wait: ".ok visible"</code> прямо перед проверкой почти не нужно. Оставьте <code>wait:</code> для пауз и состояний вроде <code>hidden</code>.</p>
 
-<h2 id="assert">Assert</h2>
+<h2 id="assert">Проверки</h2>
 <pre><code>- assert: ".welcome"
-  text: "Hello"              # is: works the same
+  text: "Hello"              # is: работает так же
 - assert: ".welcome"
   contains: "Hell"
 - assert: $welcome
@@ -186,11 +186,11 @@ natl run tests/ --config config/prod.yaml</code></pre>
 - assert: ".price"
   text: "$10"
   soft: true
-- soft_assert: ".stock"      # same as soft: true
+- soft_assert: ".stock"      # то же, что soft: true
   visible: true</code></pre>
-<p>For <code>attr:</code> you can use <code>==</code>, <code>!=</code>, <code>contains</code>, or <code>matches</code>. A hard assert stops the run. Soft ones keep going and fail the run at the end if any of them failed.</p>
+<p>В <code>attr:</code> можно использовать <code>==</code>, <code>!=</code>, <code>contains</code> и <code>matches</code>. Жёсткая проверка останавливает прогон. Мягкие продолжают работу и валят прогон в конце, если хоть одна не прошла.</p>
 
-<h2 id="extract">Read values, set, log, screenshot</h2>
+<h2 id="extract">Чтение значений, set, log, скриншот</h2>
 <pre><code>- get_text: ".title"
   save: title
 - get_attr: "a"
@@ -204,25 +204,25 @@ natl run tests/ --config config/prod.yaml</code></pre>
     file: artifacts/shot.png
     full_page: true</code></pre>
 
-<h2 id="gestures">Scroll, swipe, long press</h2>
-<p>These work on desktop and mobile web the same way. You do not branch on device type.</p>
+<h2 id="gestures">Прокрутка, свайп, долгое нажатие</h2>
+<p>Работает одинаково на десктопе и в мобильном вебе. Ветвить по типу устройства не нужно.</p>
 <pre><code>- scroll: "#footer"
-  into_view: true            # or delta_x / delta_y
+  into_view: true            # или delta_x / delta_y
 - swipe: "#carousel"
   direction: left            # left, right, up, down
   distance: 200
 - long_press: "#card"
   duration_ms: 700</code></pre>
 
-<h2 id="vars">Variables, secrets, expressions</h2>
+<h2 id="vars">Переменные, секреты, выражения</h2>
 <table>
-<thead><tr><th>Write</th><th>Meaning</th></tr></thead>
+<thead><tr><th>Запись</th><th>Значение</th></tr></thead>
 <tbody>
-<tr><td><code>$user</code></td><td>A variable</td></tr>
-<tr><td><code>$order.id</code></td><td>Nested field</td></tr>
-<tr><td><code>$env.KEY</code></td><td>From the environment or <code>.env</code> (error if missing)</td></tr>
-<tr><td><code>$secret.KEY</code></td><td>Same source; hidden in logs</td></tr>
-<tr><td><code>${ENV:KEY}</code></td><td>Older spelling; still works</td></tr>
+<tr><td><code>$user</code></td><td>Переменная</td></tr>
+<tr><td><code>$order.id</code></td><td>Вложенное поле</td></tr>
+<tr><td><code>$env.KEY</code></td><td>Из окружения или <code>.env</code> (ошибка, если нет)</td></tr>
+<tr><td><code>$secret.KEY</code></td><td>Тот же источник; скрывается в логах</td></tr>
+<tr><td><code>${ENV:KEY}</code></td><td>Старая запись; продолжает работать</td></tr>
 </tbody>
 </table>
 <pre><code>secrets:
@@ -233,11 +233,11 @@ natl run tests/ --config config/prod.yaml</code></pre>
 vars:
   user: $env.TEST_USER
   pass: $secret.TEST_PASS</code></pre>
-<p>Comparisons: <code>== != &gt; &lt; &gt;= &lt;= contains matches and or not</code>.</p>
-<p>Helpers: <code>now</code>, <code>today</code>, <code>random_int</code>, <code>random_string</code>, <code>random_uuid</code>, <code>random_email</code>, <code>len</code>, <code>contains</code>, <code>trim</code>, <code>upper</code>, <code>lower</code>, <code>replace</code>, <code>match</code>, <code>join</code>, <code>map</code>, <code>filter</code>, <code>range</code>.</p>
-<p><code>current_url</code> is available during URL checks. There is a working example in <code>examples/env_login.yaml</code>.</p>
+<p>Сравнения: <code>== != &gt; &lt; &gt;= &lt;= contains matches and or not</code>.</p>
+<p>Функции: <code>now</code>, <code>today</code>, <code>random_int</code>, <code>random_string</code>, <code>random_uuid</code>, <code>random_email</code>, <code>len</code>, <code>contains</code>, <code>trim</code>, <code>upper</code>, <code>lower</code>, <code>replace</code>, <code>match</code>, <code>join</code>, <code>map</code>, <code>filter</code>, <code>range</code>.</p>
+<p>Во время проверок адреса доступна <code>current_url</code>. Рабочий пример — <code>examples/env_login.yaml</code>.</p>
 
-<h2 id="pom">Page objects</h2>
+<h2 id="pom">Объекты страниц</h2>
 <pre><code># pages/login.yaml
 locator_strategy: css
 elements:
@@ -253,7 +253,7 @@ actions:
       with: $pass
     - click: "#login-btn"
 
-# scenario
+# сценарий
 imports:
   - pages/login.yaml
 steps:
@@ -263,11 +263,11 @@ steps:
     pass: $pass
   - include: login/login
     vars: { user: $user }</code></pre>
-<p>Use <code>do: page.action</code> in normal scenarios. <code>include:</code> is the lower-level form when you want a file path or to pull in a whole file. Extra keys next to <code>do:</code> become variables for that action.</p>
-<p>A page file can be only <code>elements</code> and <code>actions</code>, with no <code>steps</code>. When you run a folder, NATL skips <code>pages/</code> and <code>config/</code>.</p>
-<p>Locator strategy is chosen in this order: the element object, then the page file, then project config, then <code>css</code>.</p>
+<p>В обычных сценариях используйте <code>do: page.action</code>. <code>include:</code> — нижний уровень, когда нужен путь к файлу или подключение файла целиком. Дополнительные ключи рядом с <code>do:</code> становятся переменными для действия.</p>
+<p>Файл страницы может содержать только <code>elements</code> и <code>actions</code>, без <code>steps</code>. При прогоне папки NATL пропускает <code>pages/</code> и <code>config/</code>.</p>
+<p>Стратегия локатора выбирается по порядку: объект элемента, файл страницы, конфиг проекта, <code>css</code>.</p>
 
-<h2 id="cases">Cases and data</h2>
+<h2 id="cases">Кейсы и данные</h2>
 <pre><code>cases:
   - { name: user1, user: "a@test.com", pass: secret, expect: "Welcome, A" }
   - { label: user2, user: "b@test.com", pass: secret, expect: "Welcome, B" }
@@ -284,7 +284,7 @@ steps:
   - for: $item in $data
     steps:
       - log: $item.name</code></pre>
-<p>For a table of inputs, use <code>cases:</code>. For loops over lists or <code>range</code>, use <code>data:</code> with <code>for:</code>. The report adds the row <code>name</code> or <code>label</code>, or <code>[case N]</code> if you omit both.</p>
+<p>Для таблицы входных данных используйте <code>cases:</code>. Для перебора списков и <code>range</code> — <code>data:</code> вместе с <code>for:</code>. В отчёт попадает <code>name</code> или <code>label</code> строки, а если нет ни того ни другого — <code>[case N]</code>.</p>
 
 <h2 id="http">HTTP</h2>
 <pre><code>engine: http
@@ -302,8 +302,8 @@ steps:
   - delete: …
   - assert: $echo.status == 200
   - assert: $echo.ok == true</code></pre>
-<p>What gets saved: <code>{ status, headers, body, ok }</code>. Relative URLs use <code>vars.base_url</code> when that value is an http(s) URL. The old <code>api:</code> form still parses; new files should use the verbs above.</p>
-<p>UI and HTTP in one scenario:</p>
+<p>Сохраняется <code>{ status, headers, body, ok }</code>. Относительные адреса используют <code>vars.base_url</code>, если это http(s)-адрес. Старая форма <code>api:</code> ещё разбирается, но в новых файлах используйте глаголы выше.</p>
+<p>UI и HTTP в одном сценарии:</p>
 <pre><code>engine: playwright
 steps:
   - goto: $base_url
@@ -313,7 +313,7 @@ steps:
         save: ping
       - assert: $ping.status == 200
   - click: "#refresh"</code></pre>
-<p>The HTTP examples in the repo expect a local stub:</p>
+<p>HTTP-примеры в репозитории ждут локальную заглушку:</p>
 <pre><code>node stubs/echo-server.mjs
 natl run http_only.yaml
 natl run ui_http_block.yaml</code></pre>
@@ -329,62 +329,62 @@ natl run ui_http_block.yaml</code></pre>
   steps:
     - log: $i
 
-- repeat: 3                 # or "3 times", or times: 3
+- repeat: 3                 # или "3 times", или times: 3
   steps:
-    - click: "#next"        # $i is set each time
+    - click: "#next"        # $i задаётся на каждой итерации
 
 - repeat:
     until: $done == true
   steps:
-    - click: "#poll"        # stops after 1000 iterations
+    - click: "#poll"        # остановится после 1000 итераций
 
-- parallel:                 # wait: all by default, or any
+- parallel:                 # wait: all по умолчанию, можно any
   - get: $api/a
     save: a
   - get: $api/b
     save: b</code></pre>
-<p><code>before_each</code> and <code>after_each</code> run around <code>steps</code> on every attempt, including retries.</p>
+<p><code>before_each</code> и <code>after_each</code> выполняются вокруг <code>steps</code> на каждой попытке, включая повторы.</p>
 
-<h2 id="cli">Tags, retries, CLI</h2>
+<h2 id="cli">Теги, повторы, CLI</h2>
 <pre><code>name: Checkout
 tags: [smoke, checkout]
 retries: 1</code></pre>
-<pre><code>natl run tests/ --tags smoke,auth    # match any listed tag
-natl run tests/ --grep "Login"       # regex on name or path
+<pre><code>natl run tests/ --tags smoke,auth    # совпадение по любому тегу
+natl run tests/ --grep "Login"       # регулярка по имени или пути
 natl run tests/ --retries 2
 natl run tests/ --env staging
 natl run tests/ --headed
 natl run tests/ --engine selenium
 natl run tests/ --trace on-fail
 natl run tests/ --video off</code></pre>
-<p>If you pass both <code>--tags</code> and <code>--grep</code>, a file must match both. No matches means exit code 1. Retries start the whole scenario again with a new browser context. The last attempt is the result that counts.</p>
+<p>Если передать <code>--tags</code> и <code>--grep</code> вместе, файл должен совпасть по обоим. Нет совпадений — код выхода 1. Повтор запускает сценарий целиком с новым контекстом браузера. Результат определяет последняя попытка.</p>
 
-<h2 id="sugar">How to write steps</h2>
-<p>Prefer normal YAML with sibling keys. That is what editors and the schema expect:</p>
+<h2 id="sugar">Как писать шаги</h2>
+<p>Пишите обычный YAML с соседними ключами. Этого ждут редакторы и схема:</p>
 <pre><code>- fill: "#email"
   with: $user
 - wait: ".dashboard visible"
 - assert: ".welcome"
   text: "Hello"</code></pre>
-<p>There is also a one-line form the runner accepts. Many editors will mark it as invalid YAML, so I would not commit it:</p>
+<p>Есть и однострочная форма, которую раннер понимает. Многие редакторы пометят её как невалидный YAML, поэтому в репозиторий такое лучше не коммитить:</p>
 <pre><code>- fill: "#email" with: $user
 - assert: ".welcome" text: "Hello"
 - scroll: $footer into_view</code></pre>
-<p>For autocomplete, point your YAML extension at the schemas in <code>@natl/core</code>. The CLI README shows the <code>yaml.schemas</code> setting.</p>
+<p>Для автодополнения укажите расширению YAML схемы из <code>@natl/core</code>. Настройка <code>yaml.schemas</code> описана в README CLI.</p>
 
-<h2 id="next">Where to go next</h2>
+<h2 id="next">Куда дальше</h2>
 <ul>
-  <li><a href="https://github.com/natl-dev/natl/tree/main/examples">examples/</a> — POM, cases, HTTP, gestures, soft assert</li>
-  <li><a href="agent.html">Agent</a> — draft YAML from a git diff; GitHub, GitLab, Jenkins</li>
-  <li><a href="troubleshooting.html">Troubleshooting</a></li>
-  <li><a href="adapters.html">Adapters</a></li>
-  <li><a href="canon.html">Canon</a> — fixed design choices</li>
+  <li><a href="https://github.com/natl-dev/natl/tree/main/examples">examples/</a> — объекты страниц, кейсы, HTTP, жесты, мягкие проверки</li>
+  <li><a href="agent.html">Агент</a> — черновик YAML из git diff; GitHub, GitLab, Jenkins</li>
+  <li><a href="troubleshooting.html">Ошибки</a></li>
+  <li><a href="adapters.html">Движки</a></li>
+  <li><a href="canon.html">Канон</a> — зафиксированные решения</li>
 </ul>
       </article>
     </main>
     <footer class="footer">
       <div class="shell">
-                                                                                                <span data-i18n="footer.line">MIT License.</span>
+        <span data-i18n="footer.line">Лицензия MIT.</span>
         · <a href="https://github.com/natl-dev/natl">GitHub</a>
         · <a href="https://www.npmjs.com/package/@natl/cli">npm</a>
       </div>

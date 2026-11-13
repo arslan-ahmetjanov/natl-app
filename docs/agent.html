@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="ru" data-theme="light">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="NATL Agent — generate YAML tests from git diffs and run them in CI" />
-    <title>Agent · NATL test runner</title>
+    <meta name="description" content="Агент NATL — черновики YAML-тестов из git diff и прогон в CI" />
+    <title>Агент · NATL</title>
     <link rel="icon" href="assets/img/natl-icon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -16,59 +16,59 @@
       <div class="shell topbar-inner">
         <a class="brand" href="index.html">
           <img src="assets/img/natl-icon.svg" alt="" width="42" height="42" />
-          <div class="brand-text">natl<span data-i18n="meta.tagline">YAML test runner</span></div>
+          <div class="brand-text">natl<span data-i18n="meta.tagline">тесты в YAML</span></div>
         </a>
-        <nav class="nav" aria-label="Docs">
-          <a href="index.html" data-i18n="nav.home">Home</a>
-          <a href="getting-started.html" data-i18n="nav.guide">Guide</a>
-          <a href="sandbox.html" data-i18n="nav.sandbox">Sandbox</a>
-          <a href="agent.html" data-i18n="nav.agent" aria-current="page">Agent</a>
-          <a href="troubleshooting.html" data-i18n="nav.troubleshooting">Troubleshooting</a>
-          <a href="canon.html" data-i18n="nav.canon">Canon</a>
-          <a href="architecture.html" data-i18n="nav.architecture">Architecture</a>
-          <a href="adapters.html" data-i18n="nav.adapters">Adapters</a>
+        <nav class="nav" aria-label="Документация">
+          <a href="index.html" data-i18n="nav.home">Главная</a>
+          <a href="getting-started.html" data-i18n="nav.guide">Начало работы</a>
+          <a href="sandbox.html" data-i18n="nav.sandbox">Песочница</a>
+          <a href="agent.html" data-i18n="nav.agent" aria-current="page">Агент</a>
+          <a href="troubleshooting.html" data-i18n="nav.troubleshooting">Ошибки</a>
+          <a href="canon.html" data-i18n="nav.canon">Канон</a>
+          <a href="architecture.html" data-i18n="nav.architecture">Архитектура</a>
+          <a href="adapters.html" data-i18n="nav.adapters">Движки</a>
         </nav>
         <div class="controls">
-          <select data-lang-select aria-label="Language">
-            <option value="en">English</option>
+          <select data-lang-select aria-label="Язык">
             <option value="ru">Русский</option>
+            <option value="en">English</option>
             <option value="zh">中文</option>
             <option value="es">Español</option>
           </select>
-          <button type="button" data-theme-toggle data-light="Light" data-dark="Dark">Dark</button>
+          <button type="button" data-theme-toggle data-light="Светлая" data-dark="Тёмная">Тёмная</button>
         </div>
       </div>
     </header>
     <main class="shell">
       <article class="content" data-page-content>
-<h1>Agent</h1>
-<p><code>@natl/agent</code> turns a <strong>git diff</strong> into a suggested <strong>NATL YAML</strong> draft via an OpenAI-compatible LLM, then gates it with the same validate bar as <code>natl validate</code>. It does not replace writing tests by hand or running <code>natl run</code>.</p>
-<nav class="course-toc" aria-label="Contents">
-  <h2>Contents</h2>
+<h1>Агент</h1>
+<p><code>@natl/agent</code> превращает <strong>git diff</strong> в черновик <strong>NATL YAML</strong> через LLM с OpenAI-совместимым API, а потом прогоняет его через ту же проверку, что и <code>natl validate</code>. Он не заменяет написание тестов руками и не заменяет <code>natl run</code>.</p>
+<nav class="course-toc" aria-label="Содержание">
+  <h2>Содержание</h2>
   <ol>
-    <li><a href="#what">What it does</a></li>
-    <li><a href="#install">Install and config</a></li>
-    <li><a href="#local">First local run</a></li>
+    <li><a href="#what">Что делает</a></li>
+    <li><a href="#install">Установка и настройка</a></li>
+    <li><a href="#local">Первый локальный запуск</a></li>
     <li><a href="#github">GitHub Actions</a></li>
     <li><a href="#gitlab">GitLab CI</a></li>
     <li><a href="#jenkins">Jenkins</a></li>
-    <li><a href="#run">Generate then run in CI</a></li>
-    <li><a href="#limits">Limits and review</a></li>
+    <li><a href="#run">Сгенерировать и прогнать в CI</a></li>
+    <li><a href="#limits">Ограничения и ревью</a></li>
   </ol>
 </nav>
-<h2 id="what">What it does</h2>
-<p><code>natl run</code> answers: does this scenario pass? <code>natl-agent</code> answers: what smoke could we suggest for this PR?</p>
+<h2 id="what">Что делает</h2>
+<p><code>natl run</code> отвечает: проходит ли сценарий? <code>natl-agent</code> отвечает: какой дымовой тест стоит предложить для этого пул-реквеста?</p>
 <ol>
-  <li>Diff against a base ref</li>
-  <li>Semantic parse (Tree-sitter + heuristic fallback)</li>
-  <li>Few-shot context from existing YAML in <code>test_roots</code></li>
-  <li>LLM → JSON/YAML → normalize → validate</li>
-  <li>Optional self-healing retries</li>
-  <li>Publish: PR/MR comment or stdout</li>
+  <li>Сравнивает ветку с базовой</li>
+  <li>Разбирает изменения семантически (Tree-sitter и эвристика как запасной путь)</li>
+  <li>Берёт примеры из существующих YAML в <code>test_roots</code></li>
+  <li>LLM → JSON или YAML → нормализация → валидация</li>
+  <li>При желании запускает самопочинку</li>
+  <li>Публикует: комментарий в PR или вывод в лог</li>
 </ol>
-<h2 id="install">Install and config</h2>
+<h2 id="install">Установка и настройка</h2>
 <pre><code>npm install -D @natl/agent @natl/cli</code></pre>
-<p>Create <code>natl-agent.yml</code> (do not commit API keys):</p>
+<p>Создайте <code>natl-agent.yml</code> (ключи API в репозиторий не коммитьте):</p>
 <pre><code>llm:
   provider: openai   # openai | ollama | azure | custom
   endpoint: https://api.openai.com/v1
@@ -82,13 +82,13 @@ test_roots: [tests, examples]
 self_healing:
   enabled: false
   max_retries: 2</code></pre>
-<p>Local Ollama: <code>provider: ollama</code>, <code>endpoint: http://127.0.0.1:11434/v1</code>, <code>json_mode: false</code>. Examples: <code>examples/natl-agent.*.yml</code>.</p>
-<h2 id="local">First local run</h2>
-<pre><code>export LLM_API_KEY=sk-...   # skip for Ollama
+<p>Локальная Ollama: <code>provider: ollama</code>, <code>endpoint: http://127.0.0.1:11434/v1</code>, <code>json_mode: false</code>. Примеры: <code>examples/natl-agent.*.yml</code>.</p>
+<h2 id="local">Первый локальный запуск</h2>
+<pre><code>export LLM_API_KEY=sk-...   # для Ollama не нужно
 natl-agent --config natl-agent.yml --mode stdout --base origin/main</code></pre>
-<p>Copy the draft into <code>tests/</code>, edit selectors/URLs, then <code>natl validate</code> and <code>natl run</code>.</p>
+<p>Скопируйте черновик в <code>tests/</code>, поправьте селекторы и адреса, затем <code>natl validate</code> и <code>natl run</code>.</p>
 <h2 id="github">GitHub Actions</h2>
-<p>Template: <a href="https://github.com/natl-dev/natl/blob/main/examples/.github/workflows/natl-agent.yml"><code>examples/.github/workflows/natl-agent.yml</code></a>. Needs <code>fetch-depth: 0</code>, secret <code>OPENAI_API_KEY</code>, and <code>pull-requests: write</code> for <code>mode: comment</code>.</p>
+<p>Шаблон: <a href="https://github.com/natl-dev/natl/blob/main/examples/.github/workflows/natl-agent.yml"><code>examples/.github/workflows/natl-agent.yml</code></a>. Нужны <code>fetch-depth: 0</code>, секрет <code>OPENAI_API_KEY</code> и <code>pull-requests: write</code> для <code>mode: comment</code>.</p>
 <pre><code>- uses: actions/checkout@v4
   with:
     fetch-depth: 0
@@ -98,30 +98,30 @@ natl-agent --config natl-agent.yml --mode stdout --base origin/main</code></pre>
     base_ref: origin/$&#123;&#123; github.base_ref &#125;&#125;
     mode: comment
     config: natl-agent.yml</code></pre>
-<p>In a consumer repo either vendor the composite action from the NATL tree or install CLI: <code>npm install -g @natl/agent</code> and call <code>natl-agent</code> in a step. See <code>examples/.github/workflows/natl-agent.yml</code>.</p>
+<p>В своём репозитории либо копируйте composite action из дерева NATL, либо установите CLI: <code>npm install -g @natl/agent</code> и вызывайте <code>natl-agent</code> отдельным шагом. Смотрите <code>examples/.github/workflows/natl-agent.yml</code>.</p>
 <h2 id="gitlab">GitLab CI</h2>
-<p>Template: <a href="https://github.com/natl-dev/natl/blob/main/examples/ci/gitlab-ci.yml"><code>examples/ci/gitlab-ci.yml</code></a>. Default <code>NATL_AGENT_MODE=stdout</code> (dry-run in the job log). For an MR note set <code>NATL_AGENT_MODE=comment</code> and masked <code>LLM_API_KEY</code> + <code>GITLAB_TOKEN</code>.</p>
+<p>Шаблон: <a href="https://github.com/natl-dev/natl/blob/main/examples/ci/gitlab-ci.yml"><code>examples/ci/gitlab-ci.yml</code></a>. По умолчанию <code>NATL_AGENT_MODE=stdout</code> — пробный прогон в логе джобы. Для комментария в MR поставьте <code>NATL_AGENT_MODE=comment</code> и masked-переменные <code>LLM_API_KEY</code> и <code>GITLAB_TOKEN</code>.</p>
 <h2 id="jenkins">Jenkins</h2>
-<p>Template: <a href="https://github.com/natl-dev/natl/blob/main/examples/ci/Jenkinsfile"><code>examples/ci/Jenkinsfile</code></a>. Credential <code>llm-api-key</code>; parameters <code>AGENT_MODE</code> and <code>COMMENT_PROVIDER</code> (<code>auto</code> / <code>github</code> / <code>gitlab</code> / <code>stdout</code>).</p>
-<h2 id="run">Generate then run in CI</h2>
+<p>Шаблон: <a href="https://github.com/natl-dev/natl/blob/main/examples/ci/Jenkinsfile"><code>examples/ci/Jenkinsfile</code></a>. Учётные данные <code>llm-api-key</code>; параметры <code>AGENT_MODE</code> и <code>COMMENT_PROVIDER</code> (<code>auto</code> / <code>github</code> / <code>gitlab</code> / <code>stdout</code>).</p>
+<h2 id="run">Сгенерировать и прогнать в CI</h2>
 <ul>
-  <li><strong>Job A</strong> — <code>natl-agent</code>: suggest + validate gate; publish comment or stdout</li>
-  <li><strong>Review</strong> — human edits YAML into <code>tests/</code></li>
-  <li><strong>Job B</strong> — <code>natl run</code> on the accepted suite (same pattern as the <a href="getting-started.html">guide</a> / examples CI)</li>
+  <li><strong>Джоба A</strong> — <code>natl-agent</code>: предложение и проверка валидации, публикация комментария или вывод в лог</li>
+  <li><strong>Ревью</strong> — человек переносит YAML в <code>tests/</code></li>
+  <li><strong>Джоба B</strong> — <code>natl run</code> по принятому набору (как в <a href="getting-started.html">руководстве</a> и примерах CI)</li>
 </ul>
-<p>Avoid auto-committing drafts into <code>main</code> without review. If you need an immediate dry run of the draft, keep it as a workflow artifact and run validate there — do not treat it as the suite source of truth.</p>
-<h2 id="limits">Limits and review</h2>
+<p>Не коммитьте черновики в <code>main</code> без ревью. Если нужен пробный прогон черновика, оставьте его артефактом workflow и запускайте validate там — это не источник истины для набора тестов.</p>
+<h2 id="limits">Ограничения и ревью</h2>
 <ul>
-  <li>Empty or unsupported diffs → little or no suggestion</li>
-  <li>Small local models are for pipeline smoke only; prefer <code>gpt-4o-mini</code>-class or Ollama ≥3B in CI</li>
-  <li>Agent never weakens the validate gate; self-healing retries, then still fails if invalid</li>
+  <li>Пустой или неподдерживаемый diff → предложений мало или нет</li>
+  <li>Небольшие локальные модели годятся только для проверки конвейера; в CI берите уровень <code>gpt-4o-mini</code> или Ollama от 3B</li>
+  <li>Агент не ослабляет проверку: самопочинка пробует ещё раз, но невалидный сценарий всё равно отклоняется</li>
 </ul>
-<p>More detail: package README <code>@natl/agent</code> and <a href="https://github.com/natl-dev/natl/tree/main/examples/ci"><code>examples/ci/</code></a>.</p>
+<p>Подробнее: README пакета <code>@natl/agent</code> и <a href="https://github.com/natl-dev/natl/tree/main/examples/ci"><code>examples/ci/</code></a>.</p>
       </article>
     </main>
     <footer class="footer">
       <div class="shell">
-        <span data-i18n="footer.line">MIT License.</span>
+        <span data-i18n="footer.line">Лицензия MIT.</span>
         · <a href="https://github.com/natl-dev/natl">GitHub</a>
         · <a href="https://www.npmjs.com/package/@natl/cli">npm</a>
       </div>
