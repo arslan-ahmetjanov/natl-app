@@ -122,7 +122,7 @@ npm run build    # установщик в dist/
 - [`docs/versioning.md`](./docs/versioning.md) — схема версий.
 - [`docs/repositories.md`](./docs/repositories.md) — карта репозиториев.
 - [`docs/adr/`](./docs/adr/) — принятые решения.
-- `core/docs/` — язык и API.
+- `core/docs/` — язык и API (в репозитории движка).
 
 ## Лицензия
 
