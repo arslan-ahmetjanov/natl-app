@@ -1,7 +1,7 @@
 {
   "name": "@natl/cli",
   "version": "1.0.0",
-  "description": "NATL CLI — run and validate YAML test scenarios",
+  "description": "NATL IDE · CLI для прогона YAML-сценариев в терминале и CI",
   "license": "MIT",
   "type": "module",
   "bin": {
@@ -30,7 +30,9 @@
     "cli",
     "testing",
     "yaml",
-    "e2e"
+    "e2e",
+    "natl-ide",
+    "test-automation"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",

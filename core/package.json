@@ -1,7 +1,7 @@
 {
   "name": "@natl/core",
   "version": "1.0.0",
-  "description": "NATL language core: YAML parser, expressions, interpreter, EngineAdapter contract",
+  "description": "NATL IDE · движок: язык YAML-сценариев, интерпретатор и отчёты",
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
@@ -28,7 +28,9 @@
     "testing",
     "yaml",
     "automation",
-    "e2e"
+    "e2e",
+    "natl-ide",
+    "test-automation"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",

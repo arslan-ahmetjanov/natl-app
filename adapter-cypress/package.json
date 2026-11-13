@@ -1,7 +1,7 @@
 {
   "name": "@natl/adapter-cypress",
   "version": "1.0.0",
-  "description": "Experimental Cypress engine adapter for NATL (MVP; not Playwright parity)",
+  "description": "NATL IDE · экспериментальный движок Cypress",
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
@@ -26,7 +26,9 @@
     "cypress",
     "adapter",
     "e2e",
-    "testing"
+    "testing",
+    "natl-ide",
+    "test-automation"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",

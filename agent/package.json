@@ -1,7 +1,7 @@
 {
   "name": "@natl/agent",
   "version": "0.1.0",
-  "description": "NATL Agent — generate YAML tests from git diffs via OpenAI-compatible LLM",
+  "description": "NATL IDE · агент: черновики сценариев из git diff через LLM",
   "license": "MIT",
   "type": "module",
   "bin": {
@@ -35,7 +35,9 @@
     "github-actions",
     "llm",
     "yaml",
-    "testing"
+    "testing",
+    "natl-ide",
+    "test-automation"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",

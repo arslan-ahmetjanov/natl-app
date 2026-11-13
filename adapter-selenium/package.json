@@ -1,7 +1,7 @@
 {
   "name": "@natl/adapter-selenium",
   "version": "1.0.0",
-  "description": "Official Selenium WebDriver engine adapter for NATL",
+  "description": "NATL IDE · движок Selenium WebDriver для UI-сценариев",
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
@@ -27,7 +27,9 @@
     "webdriver",
     "adapter",
     "e2e",
-    "testing"
+    "testing",
+    "natl-ide",
+    "test-automation"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
