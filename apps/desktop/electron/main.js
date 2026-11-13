@@ -3,6 +3,15 @@ const fs = require('fs');
 const { app, BrowserWindow, ipcMain, dialog, Menu } = require('electron');
 const isDev = require('electron-is-dev');
 
+// Chromium живёт в папке данных приложения, а не в системном кэше Playwright.
+// Переменную надо выставить раньше, чем кто-либо потребует playwright: реестр
+// читает её при загрузке модуля.
+try {
+  require('./services/browserRuntime').configureBrowsersPath(app.getPath('userData'));
+} catch (err) {
+  console.error('[NATL] не удалось задать папку браузеров:', err.message);
+}
+
 const filestore = require('./store/filestore');
 const lastOpenedWorkspaces = require('./store/lastOpenedWorkspaces');
 const { registerWorkspaceIpc, setCurrentPath } = require('./ipc/workspace');

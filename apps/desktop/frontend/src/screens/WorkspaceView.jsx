@@ -55,6 +55,7 @@ export default function WorkspaceView({
   onRefresh,
   onOpenFolder,
   onCloseWorkspace,
+  onOpenBrowserSetup,
 }) {
   const [view, setView] = useState('dashboard');
   const [selected, setSelected] = useState(null);
@@ -321,7 +322,11 @@ export default function WorkspaceView({
           if (onRefresh) onRefresh();
         }}
       />
-      <LlmSettingsDialog open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <LlmSettingsDialog
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        onOpenBrowserSetup={onOpenBrowserSetup}
+      />
       <OnboardingDialog />
     </Box>
   );

@@ -33,13 +33,14 @@ const STATUS_TEXT = {
  * Автообновление по умолчанию выключено. Включается здесь, канал
  * переключается между stable и beta, проверка доступна и вручную.
  */
-export default function LlmSettingsDialog({ open, onClose }) {
+export default function LlmSettingsDialog({ open, onClose, onOpenBrowserSetup }) {
   const [apiKey, setApiKey] = useState('');
   const [modelName, setModelName] = useState('');
   const [baseUrl, setBaseUrl] = useState('');
   const [hasKey, setHasKey] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+  const [browser, setBrowser] = useState(null);
 
   const [update, setUpdate] = useState(null);
   const [updateError, setUpdateError] = useState(null);
@@ -62,11 +63,21 @@ export default function LlmSettingsDialog({ open, onClose }) {
       .catch((err) => setError(err.message || String(err)));
 
     api.updateGet?.().then(setUpdate).catch(() => setUpdate(null));
+    api.browserRuntimeStatus?.().then(setBrowser).catch(() => setBrowser(null));
 
     const off = api.onUpdateStatus?.((status) => {
       setUpdate((prev) => (prev ? { ...prev, status } : prev));
     });
-    return typeof off === 'function' ? off : undefined;
+    // Диалог браузера может закрыться, пока настройки открыты: обновляем статус.
+    const offBrowser = api.onBrowserProgress?.((event) => {
+      if (event?.phase === 'done') {
+        api.browserRuntimeStatus?.().then(setBrowser).catch(() => {});
+      }
+    });
+    return () => {
+      if (typeof off === 'function') off();
+      if (typeof offBrowser === 'function') offBrowser();
+    };
   }, [open, api]);
 
   const save = async () => {
@@ -232,6 +243,42 @@ export default function LlmSettingsDialog({ open, onClose }) {
             {updateError && <Alert severity="warning">{updateError}</Alert>}
           </Stack>
         )}
+
+        <Divider sx={{ my: 2 }} />
+
+        <Typography variant="overline" sx={{ color: 'text.secondary' }}>Браузер</Typography>
+        <Stack spacing={1} sx={{ mt: 1 }}>
+          {browser ? (
+            <>
+              <Typography variant="body2">
+                {browser.installed ? 'Скачан' : 'Не скачан'}
+              </Typography>
+              <Typography
+                variant="caption"
+                sx={{ color: 'text.secondary', wordBreak: 'break-all' }}
+              >
+                {browser.installed ? browser.executablePath : `Папка: ${browser.browsersDir || '—'}`}
+              </Typography>
+            </>
+          ) : (
+            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+              Статус браузера недоступен.
+            </Typography>
+          )}
+          <Box>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={() => onOpenBrowserSetup?.()}
+              disabled={!onOpenBrowserSetup}
+            >
+              {browser?.installed ? 'Проверить' : 'Скачать браузер'}
+            </Button>
+          </Box>
+          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+            Chromium для записи и прогона. Около 280 МБ, скачивается один раз.
+          </Typography>
+        </Stack>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} sx={{ color: 'text.secondary' }}>Отмена</Button>

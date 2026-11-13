@@ -172,4 +172,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Browser (for UI tests)
   browserGetConfig: () => ipcRenderer.invoke('browser:getConfig'),
   browserSaveConfig: (opts) => ipcRenderer.invoke('browser:saveConfig', opts),
+  // Chromium в папке данных приложения
+  browserRuntimeStatus: () => ipcRenderer.invoke('browser:runtimeStatus'),
+  browserRuntimeInstall: () => ipcRenderer.invoke('browser:runtimeInstall'),
+  browserRuntimeCancel: () => ipcRenderer.invoke('browser:runtimeCancel'),
+  browserRuntimeOpenFolder: () => ipcRenderer.invoke('browser:runtimeOpenFolder'),
+  onBrowserProgress: (cb) => {
+    const fn = (_, payload) => cb(payload);
+    ipcRenderer.on('main:browser-progress', fn);
+    return () => ipcRenderer.removeListener('main:browser-progress', fn);
+  },
 });

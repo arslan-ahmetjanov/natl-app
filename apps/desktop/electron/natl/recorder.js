@@ -192,7 +192,16 @@ async function startRecording({ url, onStep = () => {}, headless = false } = {})
   const target = assertRecordableUrl(url);
   const state = createRecorderState();
 
-  const browser = await chromium.launch({ headless });
+  const executablePath = require('../services/browserRuntime').installedChromiumPath();
+  if (!executablePath) {
+    const error = new Error(
+      'Браузер не установлен. Откройте «Настройки» → «Браузер» и скачайте Chromium.',
+    );
+    error.code = 'BROWSER_MISSING';
+    throw error;
+  }
+
+  const browser = await chromium.launch({ headless, executablePath });
   const context = await browser.newContext();
   const page = await context.newPage();
   page.setDefaultTimeout(5000);

@@ -111,6 +111,9 @@ export function humanizeError(raw, context = {}) {
   }
 
   // Прочее из приложения
+  if (/Executable doesn't exist|playwright install/i.test(text)) {
+    return 'Браузер для записи не установлен. Откройте «Настройки» → «Браузер» и скачайте Chromium.';
+  }
   if (/No workspace opened/i.test(text)) return 'Рабочая папка не открыта. Откройте папку проекта.';
   if (/Test not found/i.test(text)) return 'Тест не найден. Возможно, файл переименован или удалён.';
   if (/Запись не запущена/i.test(text)) return 'Запись не запущена: нажмите «Записать» и попробуйте снова.';

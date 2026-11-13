@@ -15,9 +15,28 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 
+const runtime = require('../electron/services/browserRuntime');
+
+// Системный Playwright не нужен: браузер берём из apps/desktop/.browsers,
+// если папку не задали снаружи через PLAYWRIGHT_BROWSERS_PATH.
+if (!(process.env.PLAYWRIGHT_BROWSERS_PATH || '').trim()) {
+  process.env.PLAYWRIGHT_BROWSERS_PATH = path.join(__dirname, '..', '.browsers');
+}
+
 const { runScenario } = require('../electron/natl/run');
 
 const FIXTURES = path.join(__dirname, '..', 'fixtures');
+
+function printProgress(event) {
+  if (!event) return;
+  if (event.phase === 'download') {
+    const total = event.totalMiB == null ? '?' : event.totalMiB;
+    const done = event.downloadedMiB == null ? '?' : event.downloadedMiB;
+    console.log(`${event.percent}% · ${event.label || 'загрузка'} · ${done}/${total} MiB`);
+  } else if (event.phase === 'unpack') {
+    console.log(`100% · распаковка: ${event.label || ''}`);
+  }
+}
 
 function serveFixtures() {
   const server = http.createServer((req, res) => {
@@ -56,6 +75,12 @@ function scenarioFor(port) {
 }
 
 (async () => {
+  const executablePath = await runtime.ensureChromium({
+    userDataPath: path.join(__dirname, '..'),
+    onProgress: printProgress,
+  });
+  console.log(`browser: ${executablePath}`);
+
   const { server, port } = await serveFixtures();
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'natl-smoke-'));
   fs.mkdirSync(path.join(root, 'tests'), { recursive: true });

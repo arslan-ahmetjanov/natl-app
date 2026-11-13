@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, lazy, Suspense } from 'react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { Box, CircularProgress, CssBaseline } from '@mui/material';
 import WelcomeScreen from './screens/WelcomeScreen';
+import BrowserSetupDialog from './components/BrowserSetupDialog';
 import { DEFAULT_BRAND, paletteFor } from './themes';
 
 // WorkspaceView тянет CodeMirror; грузим его отдельно, чтобы вход открывался сразу.
@@ -113,6 +114,8 @@ export default function App() {
   const [themeMode, setThemeMode] = useState(getInitialThemeMode);
   const [workspacePath, setWorkspacePath] = useState(null);
   const [workspace, setWorkspace] = useState(null);
+  const [browserDialogOpen, setBrowserDialogOpen] = useState(false);
+  const [browserReady, setBrowserReady] = useState(false);
 
   const isElectron = typeof window !== 'undefined' && window.electronAPI;
   const theme = useMemo(() => createNatlTheme(BRAND, themeMode), [themeMode]);
@@ -145,6 +148,21 @@ export default function App() {
       }
     });
   }, [isElectron]);
+
+  // Первый запуск: без Chromium запись и прогон не работают.
+  // Диалог не блокирует работу — его можно закрыть и открыть из настроек.
+  useEffect(() => {
+    if (!isElectron || browserReady) return;
+    const api = window.electronAPI;
+    if (!api.browserRuntimeStatus) return;
+    api.browserRuntimeStatus()
+      .then((status) => {
+        if (!status?.installed) setBrowserDialogOpen(true);
+      })
+      .catch(() => {});
+  }, [isElectron, browserReady]);
+
+  const openBrowserSetup = () => setBrowserDialogOpen(true);
 
   const handleOpenFolder = async (path) => {
     if (!isElectron || !path) return;
@@ -200,9 +218,15 @@ export default function App() {
             onRefresh={() => window.electronAPI.getWorkspaceMeta().then(setWorkspace)}
             onOpenFolder={handleOpenFolder}
             onCloseWorkspace={handleCloseWorkspace}
+            onOpenBrowserSetup={openBrowserSetup}
           />
         </Suspense>
       )}
+      <BrowserSetupDialog
+        open={browserDialogOpen}
+        onClose={() => setBrowserDialogOpen(false)}
+        onReady={() => setBrowserReady(true)}
+      />
     </ThemeProvider>
   );
 }

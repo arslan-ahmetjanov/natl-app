@@ -257,8 +257,20 @@ async function runTest(workspacePath, testId, options = {}) {
       const engine = playwright.chromium;
       const launchOpts = { headless };
       const p = config.executablePath != null ? String(config.executablePath).trim() : '';
-      if (!p) throw new Error('Browser executable path is not set in Settings.');
-      launchOpts.executablePath = p;
+      if (p) {
+        launchOpts.executablePath = p;
+      } else {
+        // Свой браузер из настроек важнее; иначе берём Chromium приложения.
+        const bundled = require('./browserRuntime').installedChromiumPath();
+        if (!bundled) {
+          const error = new Error(
+            'Браузер не установлен. Откройте «Настройки» → «Браузер» и скачайте Chromium.',
+          );
+          error.code = 'BROWSER_MISSING';
+          throw error;
+        }
+        launchOpts.executablePath = bundled;
+      }
       browser = await engine.launch(launchOpts);
       const viewportSize = { width: viewport.width || 1920, height: viewport.height || 1080 };
       const context = await browser.newContext({ viewport: viewportSize });
