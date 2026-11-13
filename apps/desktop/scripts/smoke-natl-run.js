@@ -17,7 +17,7 @@ const path = require('node:path');
 
 const { runScenario } = require('../electron/natl/run');
 
-const FIXTURES = path.join(__dirname, '..', '..', '..', 'examples', 'fixtures');
+const FIXTURES = path.join(__dirname, '..', 'fixtures');
 
 function serveFixtures() {
   const server = http.createServer((req, res) => {

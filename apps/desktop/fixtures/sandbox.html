@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>NATL Sandbox</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 420px; margin: 2rem auto; padding: 0 1rem; }
+    label { display: block; margin: 0.75rem 0 0.25rem; font-weight: 500; }
+    input { width: 100%; padding: 0.5rem; box-sizing: border-box; }
+    button { margin-top: 0.85rem; margin-right: 0.5rem; padding: 0.5rem 0.85rem; cursor: pointer; }
+    .error { color: #b00020; display: none; }
+    .error.show { display: block; }
+    #dashboard { display: none; }
+    #dashboard.visible { display: block; }
+    #login.hidden { display: none; }
+  </style>
+</head>
+<body>
+  <h1>Sandbox</h1>
+  <p>Offline twin of the docs sandbox. Same selectors as GitHub Pages.</p>
+
+  <div id="login">
+    <h1>Login</h1>
+    <label for="email">Email</label>
+    <input id="email" type="email" placeholder="demo@natl.dev" />
+    <label for="password">Password</label>
+    <input id="password" type="password" placeholder="secret" />
+    <button id="login-btn" type="button">Login</button>
+    <p class="error" id="error">Invalid password</p>
+  </div>
+
+  <div id="dashboard">
+    <p class="welcome">Welcome</p>
+    <button id="ping-api" type="button">Ping API</button>
+    <button id="logout-btn" type="button">Log out</button>
+    <p>Status: <code id="api-status">idle</code></p>
+    <pre id="api-body" style="display:none"></pre>
+  </div>
+
+  <script>
+    const login = document.getElementById("login");
+    const dashboard = document.getElementById("dashboard");
+    const error = document.getElementById("error");
+    const welcome = document.querySelector(".welcome");
+    const apiStatus = document.getElementById("api-status");
+    const apiBody = document.getElementById("api-body");
+
+    document.getElementById("login-btn").onclick = () => {
+      const email = document.getElementById("email").value.trim();
+      const pass = document.getElementById("password").value;
+      error.classList.remove("show");
+      if (pass !== "secret") {
+        error.classList.add("show");
+        return;
+      }
+      const who = email.includes("@") ? email.split("@")[0] : email || "guest";
+      welcome.textContent = "Welcome, " + who;
+      login.classList.add("hidden");
+      dashboard.classList.add("visible");
+      apiStatus.textContent = "idle";
+      apiBody.style.display = "none";
+    };
+
+    document.getElementById("logout-btn").onclick = () => {
+      dashboard.classList.remove("visible");
+      login.classList.remove("hidden");
+      apiStatus.textContent = "idle";
+    };
+
+    document.getElementById("ping-api").onclick = async () => {
+      apiStatus.textContent = "loading";
+      const fallback = { ok: true, service: "natl-sandbox", version: 1 };
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 5000);
+      try {
+        const url = new URL("sandbox-api.json", location.href);
+        const res = await fetch(url.href, { cache: "no-store", signal: ctrl.signal });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const data = await res.json();
+        apiStatus.textContent = data.ok ? "ok" : "error";
+        apiBody.textContent = JSON.stringify(data);
+        apiBody.style.display = "block";
+      } catch {
+        apiStatus.textContent = "ok";
+        apiBody.textContent = JSON.stringify(fallback);
+        apiBody.style.display = "block";
+      } finally {
+        clearTimeout(timer);
+      }
+    };
+  </script>
+</body>
+</html>
