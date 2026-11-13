@@ -13,7 +13,6 @@ import {
   Typography,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 
@@ -30,7 +29,7 @@ function StatCard({ label, value, hint }) {
 }
 
 /** Обзор рабочей папки: что есть и с чего начать. */
-export default function DashboardScreen({ workspacePath, onOpen, onRecord, onOpenAi, onOpenList }) {
+export default function DashboardScreen({ workspacePath, onOpen, onRecord, onOpenList }) {
   const [scenarios, setScenarios] = useState([]);
   const [error, setError] = useState(null);
   const api = window.electronAPI;
@@ -101,11 +100,11 @@ export default function DashboardScreen({ workspacePath, onOpen, onRecord, onOpe
           </CardActionArea>
         </Card>
         <Card sx={{ p: 0, overflow: 'hidden' }}>
-          <CardActionArea onClick={onOpenAi} sx={{ p: 2.5 }}>
-            <AutoAwesomeIcon sx={{ color: 'primary.main' }} />
-            <Typography variant="subtitle1" sx={{ mt: 1 }}>ИИ-агент</Typography>
+          <CardActionArea onClick={onOpenList} sx={{ p: 2.5 }}>
+            <PlayArrowIcon sx={{ color: 'primary.main' }} />
+            <Typography variant="subtitle1" sx={{ mt: 1 }}>Открыть сценарий</Typography>
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-              Попросить агента проверить, дополнить или запустить тесты.
+              Посмотреть шаги на русском, поправить и запустить прогон.
             </Typography>
           </CardActionArea>
         </Card>

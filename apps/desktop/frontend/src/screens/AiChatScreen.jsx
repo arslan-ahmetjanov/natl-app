@@ -10,7 +10,6 @@ import {
   Typography,
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 
 const SUGGESTIONS = [
   'Проверь сценарии в tests/ и скажи, какие шаги могут быть нестабильными',
@@ -58,22 +57,12 @@ export default function AiChatScreen({ onOpenSettings }) {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-      <Box sx={{ px: 2, py: 1.25, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1 }}>
-        <AutoAwesomeIcon fontSize="small" sx={{ color: 'primary.main' }} />
-        <Typography variant="subtitle1">ИИ-агент</Typography>
-        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-          читает, правит и запускает сценарии
-        </Typography>
-        <Box sx={{ flex: 1 }} />
-        <Button size="small" onClick={onOpenSettings}>Настройки ИИ</Button>
-      </Box>
-
-      <Box sx={{ flex: 1, overflow: 'auto', px: 2, py: 2 }}>
+      <Box sx={{ flex: 1, overflow: 'auto', px: 1.5, py: 1.5 }}>
         {messages.length === 0 && (
-          <Stack spacing={1.5} sx={{ maxWidth: 620 }}>
+          <Stack spacing={1.5}>
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
               Опишите задачу обычными словами. Агент посмотрит файлы, предложит правку
-              и сможет запустить прогон. Ничего не сохраняется без вашего сообщения.
+              и сможет запустить прогон.
             </Typography>
             {SUGGESTIONS.map((item) => (
               <Button

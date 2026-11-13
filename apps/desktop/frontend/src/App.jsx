@@ -1,14 +1,9 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { Box, CircularProgress, CssBaseline } from '@mui/material';
-import MainLayout from './components/MainLayout';
-import WindowTitleBar from './components/WindowTitleBar';
-import WelcomeHeader from './screens/WelcomeHeader';
-import WelcomeSidebar from './screens/WelcomeSidebar';
-import WelcomeOverview from './screens/WelcomeOverview';
+import WelcomeScreen from './screens/WelcomeScreen';
 
-// WorkspaceView pulls curlconverter + web-tree-sitter (WASM). Loading it on the welcome
-// route prevented React from mounting when that graph failed or stalled in Electron.
+// WorkspaceView тянет CodeMirror; грузим его отдельно, чтобы вход открывался сразу.
 const WorkspaceView = lazy(() => import('./screens/WorkspaceView'));
 
 const THEME_STORAGE_KEY = 'natl-theme';
@@ -36,18 +31,12 @@ const sharedThemeComponents = {
   },
   MuiListItemButton: {
     styleOverrides: {
-      root: {
-        borderRadius: 10,
-      },
+      root: { borderRadius: 10 },
     },
   },
   MuiTab: {
     styleOverrides: {
-      root: {
-        textTransform: 'none',
-        fontWeight: 500,
-        minHeight: 38,
-      },
+      root: { textTransform: 'none', fontWeight: 500, minHeight: 38 },
     },
   },
   MuiTableCell: {
@@ -100,9 +89,7 @@ const lightTheme = createTheme({
     subtitle1: { fontWeight: 600 },
     subtitle2: { fontWeight: 600 },
   },
-  shape: {
-    borderRadius: 10,
-  },
+  shape: { borderRadius: 10 },
   components: sharedThemeComponents,
 });
 
@@ -124,9 +111,7 @@ const darkTheme = createTheme({
     subtitle1: { fontWeight: 600 },
     subtitle2: { fontWeight: 600 },
   },
-  shape: {
-    borderRadius: 10,
-  },
+  shape: { borderRadius: 10 },
   components: sharedThemeComponents,
 });
 
@@ -141,12 +126,8 @@ export default function App() {
   const [themeMode, setThemeMode] = useState(getInitialThemeMode);
   const [workspacePath, setWorkspacePath] = useState(null);
   const [workspace, setWorkspace] = useState(null);
-  const [pages, setPages] = useState([]);
-  const [openCloneDialog, setOpenCloneDialog] = useState(false);
-  const [openCreateProjectDialog, setOpenCreateProjectDialog] = useState(false);
 
   const isElectron = typeof window !== 'undefined' && window.electronAPI;
-
   const currentTheme = themeMode === 'dark' ? darkTheme : lightTheme;
 
   const handleToggleTheme = () => {
@@ -155,7 +136,9 @@ export default function App() {
       try {
         localStorage.setItem(THEME_STORAGE_KEY, next);
         if (document.documentElement) document.documentElement.setAttribute('data-theme', next);
-      } catch (_) {}
+      } catch {
+        /* тема не критична */
+      }
       return next;
     });
   };
@@ -170,7 +153,6 @@ export default function App() {
       if (path) {
         setWorkspacePath(path);
         window.electronAPI.getWorkspaceMeta().then(setWorkspace).catch(() => setWorkspace(null));
-        window.electronAPI.listPages().then(setPages).catch(() => setPages([]));
       }
     });
   }, [isElectron]);
@@ -182,116 +164,56 @@ export default function App() {
       if (result) {
         setWorkspacePath(result.path);
         setWorkspace(result.workspace);
-        setPages(result.pages || []);
       }
-    } catch (e) {
-      console.error(e);
+    } catch (err) {
+      console.error(err);
     }
   };
 
-  const handleCloneSuccess = async (path) => {
-    if (!isElectron || !path) return;
-    try {
-      const result = await window.electronAPI.openFolderAndLoad(path);
-      if (result) {
-        setWorkspacePath(result.path);
-        setWorkspace(result.workspace);
-        setPages(result.pages || []);
-      }
-    } catch (e) {
-      console.error(e);
-    }
+  const handleCloseWorkspace = async () => {
+    await window.electronAPI.closeWorkspace();
+    setWorkspacePath(null);
   };
 
   if (!isElectron) {
     return (
       <ThemeProvider theme={currentTheme}>
         <CssBaseline />
-        <div style={{ padding: 24, textAlign: 'center' }}>
-          <h1>TestBlox</h1>
-          <p>Run this app inside Electron (npm start from TestBlox).</p>
+        <div style={{ padding: 24, fontFamily: 'sans-serif' }}>
+          Приложение работает только внутри Electron: запустите `npm start`.
         </div>
       </ThemeProvider>
     );
   }
 
-  if (!workspacePath) {
-    return (
-      <ThemeProvider theme={currentTheme}>
-        <CssBaseline />
-        <MainLayout
-          topBar={<WindowTitleBar />}
-          header={<WelcomeHeader themeMode={themeMode} onToggleTheme={handleToggleTheme} />}
-          sidebar={
-            <WelcomeSidebar
-              onOpenFolder={async () => {
-                const path = await window.electronAPI?.openFolder();
-                if (path) handleOpenFolder(path);
-              }}
-              onCloneClick={() => setOpenCloneDialog(true)}
-              onCreateProjectClick={() => setOpenCreateProjectDialog(true)}
-            />
-          }
-          content={
-            <WelcomeOverview
-              onOpenFolder={handleOpenFolder}
-              onCloneSuccess={handleCloneSuccess}
-              openCloneDialog={openCloneDialog}
-              onOpenCloneDialog={() => setOpenCloneDialog(true)}
-              onCloseCloneDialog={() => setOpenCloneDialog(false)}
-              openCreateProjectDialog={openCreateProjectDialog}
-              onOpenCreateProjectDialog={() => setOpenCreateProjectDialog(true)}
-              onCloseCreateProjectDialog={() => setOpenCreateProjectDialog(false)}
-            />
-          }
-        />
-      </ThemeProvider>
-    );
-  }
-
-  const handleCloseWorkspace = async () => {
-    if (!isElectron) return;
-    await window.electronAPI.closeWorkspace();
-    setWorkspacePath(null);
-  };
-
   return (
     <ThemeProvider theme={currentTheme}>
       <CssBaseline />
-      <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-        <WindowTitleBar />
-        <Box sx={{ flex: 1, minHeight: 0 }}>
-          <Suspense
-            fallback={
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  minHeight: '100vh',
-                  bgcolor: 'background.default',
-                }}
-              >
-                <CircularProgress />
-              </Box>
-            }
-          >
-            <WorkspaceView
-              workspacePath={workspacePath}
-              workspace={workspace}
-              pages={pages}
-              themeMode={themeMode}
-              onToggleTheme={handleToggleTheme}
-              onRefresh={() => {
-                window.electronAPI.getWorkspaceMeta().then(setWorkspace);
-                window.electronAPI.listPages().then(setPages);
-              }}
-              onOpenFolder={handleOpenFolder}
-              onCloseWorkspace={handleCloseWorkspace}
-            />
-          </Suspense>
-        </Box>
-      </Box>
+      {!workspacePath ? (
+        <WelcomeScreen
+          onOpen={handleOpenFolder}
+          themeMode={themeMode}
+          onToggleTheme={handleToggleTheme}
+        />
+      ) : (
+        <Suspense
+          fallback={(
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
+              <CircularProgress />
+            </Box>
+          )}
+        >
+          <WorkspaceView
+            workspacePath={workspacePath}
+            workspace={workspace}
+            themeMode={themeMode}
+            onToggleTheme={handleToggleTheme}
+            onRefresh={() => window.electronAPI.getWorkspaceMeta().then(setWorkspace)}
+            onOpenFolder={handleOpenFolder}
+            onCloseWorkspace={handleCloseWorkspace}
+          />
+        </Suspense>
+      )}
     </ThemeProvider>
   );
 }

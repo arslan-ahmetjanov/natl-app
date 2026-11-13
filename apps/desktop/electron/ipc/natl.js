@@ -11,6 +11,7 @@ const { saveScenario } = require('../natl/save');
 const { runScenario, assertInsideWorkspace } = require('../natl/run');
 const { startRecording } = require('../natl/recorder');
 const { scenarioSummary } = require('../natl/scenario');
+const resources = require('../natl/resources');
 const { generateSteps } = require('../natl/ai');
 const { chat } = require('../natl/agent-chat');
 const { getStore } = require('./logs');
@@ -179,6 +180,22 @@ function registerNatlIpc() {
       fileName,
       relativePath: path.relative(root, filePath).split(path.sep).join('/'),
     };
+  });
+
+  // Ресурсы: локаторы и переиспользуемые действия в pages/
+  ipcMain.handle('resources:list', async () => resources.listResources(currentRoot()));
+  ipcMain.handle('resources:read', async (_, relativePath) =>
+    resources.readResource(currentRoot(), relativePath),
+  );
+  ipcMain.handle('resources:write', async (_, payload = {}) => {
+    const result = resources.writeResource(currentRoot(), payload.relativePath, payload.text);
+    getStore().info('resources', `ресурс сохранён: ${payload.relativePath}`);
+    return result;
+  });
+  ipcMain.handle('resources:create', async (_, name) => {
+    const result = resources.createResource(currentRoot(), name);
+    getStore().info('resources', `ресурс создан: ${result.relativePath}`);
+    return result;
   });
 
   // AI: the key never leaves the main process, the renderer only sends a prompt.

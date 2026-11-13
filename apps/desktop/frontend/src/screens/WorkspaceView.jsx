@@ -8,13 +8,15 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Paper,
   Tooltip,
   Typography,
 } from '@mui/material';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import BugReportIcon from '@mui/icons-material/BugReport';
+import DataObjectIcon from '@mui/icons-material/DataObject';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import DashboardIcon from '@mui/icons-material/SpaceDashboard';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
@@ -24,15 +26,24 @@ import LightModeIcon from '@mui/icons-material/LightMode';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LlmSettingsDialog from '../components/LlmSettingsDialog';
 import RecordScenarioDialog from '../components/RecordScenarioDialog';
+import WindowControls from '../components/WindowControls';
 import AiChatScreen from './AiChatScreen';
 import DashboardScreen from './DashboardScreen';
 import LogsScreen from './LogsScreen';
 import ScenarioScreen from './ScenarioScreen';
 import ScenariosListScreen from './ScenariosListScreen';
+import ResourcesScreen from './ResourcesScreen';
+
+const NAV = [
+  { id: 'dashboard', label: 'Обзор', icon: <DashboardIcon fontSize="small" /> },
+  { id: 'scenarios', label: 'Сценарии', icon: <AccountTreeIcon fontSize="small" /> },
+  { id: 'resources', label: 'Окружение', icon: <DataObjectIcon fontSize="small" /> },
+  { id: 'logs', label: 'Журнал', icon: <BugReportIcon fontSize="small" /> },
+];
 
 /**
- * Оболочка рабочей папки в стиле рабочего места: верхняя панель,
- * боковое меню, экраны без вложенных панелей.
+ * Рабочее место: одна шапка, схлопываемое меню слева и чат справа.
+ * Оба края убираются, чтобы отдать место файлу.
  */
 export default function WorkspaceView({
   workspacePath,
@@ -45,6 +56,8 @@ export default function WorkspaceView({
 }) {
   const [view, setView] = useState('dashboard');
   const [selected, setSelected] = useState(null);
+  const [navOpen, setNavOpen] = useState(true);
+  const [aiOpen, setAiOpen] = useState(false);
   const [recordOpen, setRecordOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [refreshToken, setRefreshToken] = useState(0);
@@ -54,15 +67,20 @@ export default function WorkspaceView({
     setView('scenario');
   };
 
-  const navItem = (icon, label, active, onClick, hint) => (
+  const navItem = (item) => (
     <ListItemButton
-      selected={active}
-      onClick={onClick}
+      key={item.id}
+      selected={view === item.id || (item.id === 'scenarios' && view === 'scenario')}
+      onClick={() => {
+        setView(item.id);
+        if (item.id !== 'scenario') setSelected(null);
+      }}
       sx={{
         borderRadius: 2,
         mb: 0.5,
-        px: 1.25,
+        px: navOpen ? 1.25 : 1,
         py: 1,
+        justifyContent: navOpen ? 'flex-start' : 'center',
         '&.Mui-selected': {
           bgcolor: 'primary.main',
           color: 'primary.contrastText',
@@ -71,121 +89,101 @@ export default function WorkspaceView({
         },
       }}
     >
-      <ListItemIcon sx={{ minWidth: 32, color: 'text.secondary' }}>{icon}</ListItemIcon>
-      <ListItemText
-        primary={label}
-        secondary={hint}
-        slotProps={{
-          primary: { fontSize: 14, fontWeight: 500 },
-          secondary: { fontSize: 11 },
-        }}
-      />
+      <ListItemIcon sx={{ minWidth: navOpen ? 32 : 0, color: 'text.secondary', justifyContent: 'center' }}>
+        {item.icon}
+      </ListItemIcon>
+      {navOpen && (
+        <ListItemText primary={item.label} primaryTypographyProps={{ fontSize: 14, fontWeight: 500 }} />
+      )}
     </ListItemButton>
   );
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', bgcolor: 'background.default' }}>
-      <Paper
-        square
-        elevation={0}
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1.5,
-          px: 2,
-          height: 56,
-          borderBottom: '1px solid',
-          borderColor: 'divider',
-          bgcolor: 'background.paper',
-          flexShrink: 0,
-        }}
-      >
-        <Typography sx={{ fontFamily: 'IBM Plex Mono, monospace', fontWeight: 700, letterSpacing: '0.12em', fontSize: 14 }}>
-          NATL
-        </Typography>
-        <Divider orientation="vertical" flexItem sx={{ my: 1.5 }} />
-        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-          {workspace?.title || 'Рабочая папка'}
-        </Typography>
-
-        <Box sx={{ flex: 1 }} />
-
-        <Button
-          size="small"
-          variant="contained"
-          startIcon={<FiberManualRecordIcon />}
-          onClick={() => setRecordOpen(true)}
-        >
-          Записать
-        </Button>
-        <Tooltip title="Настройки ИИ">
-          <IconButton size="small" onClick={() => setSettingsOpen(true)} aria-label="Настройки ИИ">
-            <SettingsIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
-        {onToggleTheme && (
-          <Tooltip title={themeMode === 'dark' ? 'Светлая тема' : 'Тёмная тема'}>
-            <IconButton size="small" onClick={onToggleTheme} aria-label="Переключить тему">
-              {themeMode === 'dark' ? <LightModeIcon fontSize="small" /> : <DarkModeIcon fontSize="small" />}
-            </IconButton>
-          </Tooltip>
+      <WindowControls
+        title="NATL"
+        subtitle={workspace?.title || workspacePath}
+        right={(
+          <>
+            <Button
+              size="small"
+              variant="contained"
+              startIcon={<FiberManualRecordIcon />}
+              onClick={() => setRecordOpen(true)}
+            >
+              Записать
+            </Button>
+            <Tooltip title="Настройки ИИ">
+              <IconButton size="small" onClick={() => setSettingsOpen(true)} aria-label="Настройки ИИ">
+                <SettingsIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            {onToggleTheme && (
+              <Tooltip title={themeMode === 'dark' ? 'Светлая тема' : 'Тёмная тема'}>
+                <IconButton size="small" onClick={onToggleTheme} aria-label="Переключить тему">
+                  {themeMode === 'dark' ? <LightModeIcon fontSize="small" /> : <DarkModeIcon fontSize="small" />}
+                </IconButton>
+              </Tooltip>
+            )}
+            {onCloseWorkspace && (
+              <Tooltip title="Закрыть рабочую папку">
+                <IconButton size="small" onClick={onCloseWorkspace} aria-label="Закрыть рабочую папку">
+                  <HomeIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )}
+          </>
         )}
-        {onCloseWorkspace && (
-          <Tooltip title="Закрыть рабочую папку">
-            <IconButton size="small" onClick={onCloseWorkspace} aria-label="Закрыть рабочую папку">
-              <HomeIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        )}
-      </Paper>
+      />
 
       <Box sx={{ display: 'flex', flex: 1, minHeight: 0 }}>
         <Box
           sx={{
-            width: 232,
+            width: navOpen ? 220 : 64,
             flexShrink: 0,
             borderRight: '1px solid',
             borderColor: 'divider',
             bgcolor: 'background.paper',
-            p: 1.5,
             display: 'flex',
             flexDirection: 'column',
-            overflow: 'auto',
+            p: 1,
+            transition: 'width 140ms ease',
+            overflow: 'hidden',
           }}
         >
+          <Box sx={{ display: 'flex', justifyContent: navOpen ? 'flex-end' : 'center', mb: 0.5 }}>
+            <Tooltip title={navOpen ? 'Свернуть меню' : 'Развернуть меню'}>
+              <IconButton
+                size="small"
+                onClick={() => setNavOpen((prev) => !prev)}
+                aria-label={navOpen ? 'Свернуть меню' : 'Развернуть меню'}
+              >
+                {navOpen ? <ChevronLeftIcon fontSize="small" /> : <ChevronRightIcon fontSize="small" />}
+              </IconButton>
+            </Tooltip>
+          </Box>
+
           <List dense disablePadding>
-            {navItem(<DashboardIcon fontSize="small" />, 'Обзор', view === 'dashboard', () => setView('dashboard'))}
-            {navItem(
-              <AccountTreeIcon fontSize="small" />,
-              'Сценарии',
-              view === 'scenarios' || view === 'scenario',
-              () => {
-                setView('scenarios');
-                setSelected(null);
-              },
-            )}
-            {navItem(<AutoAwesomeIcon fontSize="small" />, 'ИИ-агент', view === 'ai', () => setView('ai'))}
-            {navItem(<BugReportIcon fontSize="small" />, 'Журнал', view === 'logs', () => setView('logs'))}
+            {NAV.map(navItem)}
           </List>
 
           <Box sx={{ flex: 1 }} />
 
           <Divider sx={{ my: 1 }} />
-          <Button
-            size="small"
-            startIcon={<FolderOpenIcon />}
-            onClick={async () => {
-              if (!window.electronAPI || !onOpenFolder) return;
-              const path = await window.electronAPI.openFolder();
-              if (path) onOpenFolder(path);
-            }}
-            sx={{ justifyContent: 'flex-start', color: 'text.secondary', textTransform: 'none' }}
-          >
-            Открыть папку
-          </Button>
-          <Typography variant="caption" sx={{ color: 'text.secondary', px: 1, mt: 1, wordBreak: 'break-all' }}>
-            {workspacePath}
-          </Typography>
+          <Tooltip title="Открыть другую папку" placement="right">
+            <IconButton
+              size="small"
+              onClick={async () => {
+                if (!window.electronAPI || !onOpenFolder) return;
+                const path = await window.electronAPI.openFolder();
+                if (path) onOpenFolder(path);
+              }}
+              aria-label="Открыть папку"
+              sx={{ alignSelf: navOpen ? 'flex-start' : 'center', ml: navOpen ? 0.5 : 0 }}
+            >
+              <FolderOpenIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
         </Box>
 
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
@@ -194,7 +192,6 @@ export default function WorkspaceView({
               workspacePath={workspacePath}
               onOpen={openScenario}
               onRecord={() => setRecordOpen(true)}
-              onOpenAi={() => setView('ai')}
               onOpenList={() => setView('scenarios')}
             />
           )}
@@ -216,8 +213,54 @@ export default function WorkspaceView({
               }}
             />
           )}
-          {view === 'ai' && <AiChatScreen onOpenSettings={() => setSettingsOpen(true)} />}
           {view === 'logs' && <LogsScreen />}
+          {view === 'resources' && <Box sx={{ flex: 1, display: 'flex', minHeight: 0 }}><ResourcesScreen /></Box>}
+        </Box>
+
+        <Box
+          sx={{
+            width: aiOpen ? 380 : 56,
+            flexShrink: 0,
+            borderLeft: '1px solid',
+            borderColor: 'divider',
+            bgcolor: 'background.paper',
+            display: 'flex',
+            flexDirection: 'column',
+            transition: 'width 140ms ease',
+            overflow: 'hidden',
+          }}
+        >
+          <Box sx={{ display: 'flex', justifyContent: aiOpen ? 'flex-end' : 'center', p: 0.5 }}>
+            <Tooltip title={aiOpen ? 'Свернуть чат' : 'Открыть ИИ-агента'} placement="left">
+              <IconButton
+                size="small"
+                onClick={() => setAiOpen((prev) => !prev)}
+                aria-label={aiOpen ? 'Свернуть чат' : 'Открыть ИИ-агента'}
+              >
+                {aiOpen ? <ChevronRightIcon fontSize="small" /> : <AutoAwesomeIcon fontSize="small" />}
+              </IconButton>
+            </Tooltip>
+          </Box>
+          {aiOpen && (
+            <Box sx={{ flex: 1, minHeight: 0, display: 'flex' }}>
+              <AiChatScreen onOpenSettings={() => setSettingsOpen(true)} />
+            </Box>
+          )}
+          {!aiOpen && (
+            <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Typography
+                variant="caption"
+                sx={{
+                  writingMode: 'vertical-rl',
+                  color: 'text.secondary',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.16em',
+                }}
+              >
+                ИИ-агент
+              </Typography>
+            </Box>
+          )}
         </Box>
       </Box>
 
