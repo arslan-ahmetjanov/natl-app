@@ -34,6 +34,8 @@ import ApiIcon from '@mui/icons-material/Api';
 import DescriptionIcon from '@mui/icons-material/Description';
 import AllInclusiveIcon from '@mui/icons-material/AllInclusive';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
+import RecordScenarioDialog from '../components/RecordScenarioDialog';
 import HomeIcon from '@mui/icons-material/Home';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
@@ -72,6 +74,7 @@ export default function WorkspaceView({ workspacePath, workspace, pages, themeMo
   const [selectedBaseId, setSelectedBaseId] = useState(null);
   const [reportId, setReportId] = useState(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [recordOpen, setRecordOpen] = useState(false);
   const [llmConfig, setLlmConfig] = useState({ global: {}, effective: {}, isValid: false });
   const [llmForm, setLlmForm] = useState({ apiKey: '', modelName: '', apiBaseUrl: '' });
   const [llmSaving, setLlmSaving] = useState(false);
@@ -359,6 +362,14 @@ export default function WorkspaceView({ workspacePath, workspace, pages, themeMo
       )}
       <Button size="small" startIcon={<SettingsIcon />} onClick={openSettings} sx={{ color: 'text.primary' }}>
         Settings
+      </Button>
+      <Button
+        size="small"
+        startIcon={<FiberManualRecordIcon />}
+        onClick={() => setRecordOpen(true)}
+        sx={{ color: 'error.main' }}
+      >
+        Record
       </Button>
       <Button size="small" startIcon={<AccountTreeIcon />} onClick={() => { setView('git'); clearSubSelection(); }} sx={{ color: 'text.primary' }}>
         Git
@@ -660,6 +671,14 @@ export default function WorkspaceView({ workspacePath, workspace, pages, themeMo
           {view === 'sharedSteps' && (
             <SharedStepsScreen onBack={() => setView('list')} onRefresh={onRefresh} />
           )}
+
+      <RecordScenarioDialog
+        open={recordOpen}
+        onClose={() => setRecordOpen(false)}
+        onSaved={() => {
+          if (onRefresh) onRefresh();
+        }}
+      />
 
       <Dialog open={settingsOpen} onClose={() => setSettingsOpen(false)} maxWidth="sm" fullWidth PaperProps={{ sx: { bgcolor: 'background.paper' } }}>
         <DialogTitle sx={{ color: 'secondary.main' }}>Settings</DialogTitle>

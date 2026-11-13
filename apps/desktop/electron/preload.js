@@ -85,6 +85,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('main:natl-run-progress', fn);
     return () => ipcRenderer.removeListener('main:natl-run-progress', fn);
   },
+  natlRecordStart: (options) => ipcRenderer.invoke('natl:recordStart', options || {}),
+  natlRecordStop: (options) => ipcRenderer.invoke('natl:recordStop', options || {}),
+  natlRecordCancel: () => ipcRenderer.invoke('natl:recordCancel'),
+  natlSaveRecorded: (payload) => ipcRenderer.invoke('natl:saveRecorded', payload || {}),
+  onNatlRecordProgress: (cb) => {
+    const fn = (_, payload) => cb(payload);
+    ipcRenderer.on('main:natl-record-progress', fn);
+    return () => ipcRenderer.removeListener('main:natl-record-progress', fn);
+  },
   onTestRunProgress: (cb) => {
     const fn = (_, e) => cb(e);
     ipcRenderer.on('main:test-run-progress', fn);

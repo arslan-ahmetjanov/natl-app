@@ -1,11 +1,17 @@
 'use strict';
 
 const fs = require('node:fs');
+const path = require('node:path');
 const { ipcMain } = require('electron');
 
 const filestore = require('../store/filestore');
+const store = require('../natl/store');
 const { saveScenario } = require('../natl/save');
 const { runScenario, assertInsideWorkspace } = require('../natl/run');
+const { startRecording } = require('../natl/recorder');
+
+/** One recorder at a time: a second browser would fight the first for events. */
+let recorder = null;
 
 /**
  * NATL IPC: the app writes and runs scenario files inside the workspace.
@@ -53,6 +59,56 @@ function registerNatlIpc() {
     const resolved = assertInsideWorkspace(root, filePath);
     const buffer = fs.readFileSync(resolved);
     return `data:image/png;base64,${buffer.toString('base64')}`;
+  });
+
+  ipcMain.handle('natl:recordStart', async (event, options = {}) => {
+    if (recorder) {
+      await recorder.close();
+      recorder = null;
+    }
+    const sender = event.sender;
+    const handle = await startRecording({
+      url: options.url,
+      headless: options.headless === true,
+      onStep: (step) => {
+        if (!sender.isDestroyed()) sender.send('main:natl-record-progress', step);
+      },
+    });
+    recorder = handle;
+    return { url: handle.url, warnings: handle.warnings };
+  });
+
+  ipcMain.handle('natl:recordStop', async (_, options = {}) => {
+    if (!recorder) throw new Error('Запись не запущена');
+    const handle = recorder;
+    recorder = null;
+    return handle.stop({ name: options.name });
+  });
+
+  ipcMain.handle('natl:recordCancel', async () => {
+    if (!recorder) return { cancelled: false };
+    const handle = recorder;
+    recorder = null;
+    await handle.close();
+    return { cancelled: true };
+  });
+
+  ipcMain.handle('natl:saveRecorded', async (_, payload = {}) => {
+    const root = currentRoot();
+    const { yaml, name } = payload;
+    if (typeof yaml !== 'string' || !yaml.trim()) throw new Error('Пустой сценарий');
+
+    const dir = store.testsDir(root);
+    const existing = store.listScenarios(dir).map((file) => path.basename(file));
+    const fileName = store.scenarioFileName(name, existing);
+    const filePath = path.join(dir, fileName);
+    store.writeScenario(filePath, yaml);
+
+    return {
+      filePath,
+      fileName,
+      relativePath: path.relative(root, filePath).split(path.sep).join('/'),
+    };
   });
 }
 
