@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import {
+import { useEffect, useState } from 'react';import {
   Box,
   Button,
   Divider,
@@ -63,6 +62,11 @@ export default function WorkspaceView({
   const [recordOpen, setRecordOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [refreshToken, setRefreshToken] = useState(0);
+  const [appInfo, setAppInfo] = useState(null);
+
+  useEffect(() => {
+    window.electronAPI?.getAppInfo?.().then(setAppInfo).catch(() => setAppInfo(null));
+  }, []);
 
   const openScenario = (relativePath, title) => {
     setSelected({ relativePath, title });
@@ -186,6 +190,16 @@ export default function WorkspaceView({
               <FolderOpenIcon fontSize="small" />
             </IconButton>
           </Tooltip>
+          {navOpen && (
+            <Box sx={{ px: 0.5, pt: 0.5 }}>
+              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: 10, display: 'block' }}>
+                {appInfo ? `${appInfo.version} · ${appInfo.channel}` : ''}
+              </Typography>
+              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: 10, wordBreak: 'break-all' }}>
+                {workspacePath}
+              </Typography>
+            </Box>
+          )}
         </Box>
 
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>

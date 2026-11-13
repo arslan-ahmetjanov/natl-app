@@ -333,6 +333,17 @@ ipcMain.handle('workspace:createProject', async (_, parentPath, projectName) => 
 // --- IPC: get app paths ---
 ipcMain.handle('app:getPath', (_, name) => app.getPath(name));
 
+// Версия и канал сборки: показываются в интерфейсе, чтобы поддержка понимала,
+// с чем именно имеет дело пользователь.
+ipcMain.handle('app:info', () => ({
+  version: app.getVersion(),
+  name: app.getName(),
+  channel: 'community',
+  platform: process.platform,
+  arch: process.arch,
+  electron: process.versions.electron,
+}));
+
 ipcMain.handle('shell:openPath', async (_, targetPath) => {
   const { shell } = require('electron');
   const { getCurrentPath } = require('./ipc/workspace');

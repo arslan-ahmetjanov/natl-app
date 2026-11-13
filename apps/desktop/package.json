@@ -1,6 +1,6 @@
 {
   "name": "natl-desktop",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "NATL — record a path through your app, get a YAML test you can run here or in CI",
   "main": "electron/main.js",
   "private": true,
@@ -19,6 +19,8 @@
     "build:frontend": "cd frontend && npm ci && npm run build && node -e \"require('fs').cpSync('dist', '../renderer', {recursive: true, force: true})\"",
     "write-build-config": "node scripts/write-build-config.js",
     "build": "npm run build:frontend && npm run write-build-config && electron-builder --win && node scripts/copy-release-exe.js",
+    "build:linux": "npm run build:frontend && npm run write-build-config && electron-builder --linux AppImage deb",
+    "build:mac": "npm run build:frontend && npm run write-build-config && electron-builder --mac dmg",
     "build:dir": "npm run build:frontend && npm run write-build-config && electron-builder --win --dir",
     "build:custom": "npm run build:frontend && node scripts/write-build-config.js --flavor=custom && electron-builder --win && node scripts/copy-release-exe.js",
     "build:custom:dir": "npm run build:frontend && node scripts/write-build-config.js --flavor=custom && electron-builder --win --dir",
@@ -76,6 +78,20 @@
           ]
         }
       ]
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Development",
+      "artifactName": "NATL-${version}.${ext}"
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.developer-tools"
     },
     "nsis": {
       "oneClick": false,

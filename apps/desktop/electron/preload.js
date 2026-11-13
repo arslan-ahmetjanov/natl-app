@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   selectBrowserExecutable: () => ipcRenderer.invoke('dialog:selectBrowserExecutable'),
   // App
   getPath: (name) => ipcRenderer.invoke('app:getPath', name),
+  getAppInfo: () => ipcRenderer.invoke('app:info'),
   windowMinimize: () => ipcRenderer.invoke('window:minimize'),
   windowToggleMaximize: () => ipcRenderer.invoke('window:toggleMaximize'),
   windowClose: () => ipcRenderer.invoke('window:close'),

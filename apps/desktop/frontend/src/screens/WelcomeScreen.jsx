@@ -29,6 +29,7 @@ import WindowControls from '../components/WindowControls';
 /** Экран входа: одно окно, три действия, недавние папки. */
 export default function WelcomeScreen({ onOpen, themeMode, onToggleTheme }) {
   const [recent, setRecent] = useState([]);
+  const [appInfo, setAppInfo] = useState(null);
   const [cloneOpen, setCloneOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
 
@@ -45,6 +46,7 @@ export default function WelcomeScreen({ onOpen, themeMode, onToggleTheme }) {
 
   useEffect(() => {
     api?.getLastOpenedWorkspaces?.().then(setRecent).catch(() => setRecent([]));
+    api?.getAppInfo?.().then(setAppInfo).catch(() => setAppInfo(null));
   }, [api]);
 
   const openFolder = async () => {
@@ -195,6 +197,18 @@ export default function WelcomeScreen({ onOpen, themeMode, onToggleTheme }) {
             )}
           </Paper>
         </Box>
+      </Box>
+
+      <Box sx={{ px: 2, py: 1, display: 'flex', gap: 1, alignItems: 'center' }}>
+        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+          {appInfo
+            ? `${appInfo.name} ${appInfo.version} · ${appInfo.channel} · ${appInfo.platform}`
+            : 'NATL IDE'}
+        </Typography>
+        <Box sx={{ flex: 1 }} />
+        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+          Сценарии — файлы в вашем репозитории
+        </Typography>
       </Box>
 
       <Dialog open={cloneOpen} onClose={() => setCloneOpen(false)} maxWidth="sm" fullWidth>
