@@ -50,6 +50,11 @@ export default function TestEditorScreen({
   const [savedStepsSignature, setSavedStepsSignature] = useState(null);
   const [yamlSaving, setYamlSaving] = useState(false);
   const [yamlSave, setYamlSave] = useState(null);
+  const [yamlRunOpen, setYamlRunOpen] = useState(false);
+  const [yamlRunning, setYamlRunning] = useState(false);
+  const [yamlRunResult, setYamlRunResult] = useState(null);
+  const [yamlRunError, setYamlRunError] = useState(null);
+  const [yamlImages, setYamlImages] = useState([]);
   const [sharedStepPickKey, setSharedStepPickKey] = useState(0);
   const sharedStepAcToolbarRef = useRef(null);
   const sharedStepAcEmptyRef = useRef(null);
@@ -65,6 +70,35 @@ export default function TestEditorScreen({
       setYamlSave({ error: err && err.message ? err.message : String(err) });
     } finally {
       setYamlSaving(false);
+    }
+  };
+
+  const handleRunYaml = async () => {
+    if (!window.electronAPI || !yamlSave || !yamlSave.filePath) return;
+    setYamlRunOpen(true);
+    setYamlRunning(true);
+    setYamlRunResult(null);
+    setYamlRunError(null);
+    setYamlImages([]);
+    try {
+      const result = await window.electronAPI.natlRunScenario(yamlSave.filePath, { headless: true });
+      setYamlRunResult(result);
+      const images = [];
+      for (const shot of result.screenshots || []) {
+        for (const phase of ['before', 'after']) {
+          try {
+            const src = await window.electronAPI.natlReadScreenshot(shot[phase]);
+            images.push({ key: `${shot.index}-${phase}`, step: shot.index, action: shot.action, phase, src });
+          } catch {
+            /* a missing frame must not hide the run result */
+          }
+        }
+      }
+      setYamlImages(images);
+    } catch (err) {
+      setYamlRunError(err && err.message ? err.message : String(err));
+    } finally {
+      setYamlRunning(false);
     }
   };
 
@@ -462,6 +496,16 @@ export default function TestEditorScreen({
             <Button size="small" variant="outlined" color="primary" onClick={handleSaveAsYaml} disabled={yamlSaving}>
               {yamlSaving ? 'Saving YAML…' : 'Save as YAML'}
             </Button>
+            <Button
+              size="small"
+              variant="contained"
+              color="success"
+              startIcon={<PlayArrowIcon />}
+              onClick={handleRunYaml}
+              disabled={yamlRunning || !yamlSave || !yamlSave.filePath}
+            >
+              {yamlRunning ? 'Running…' : 'Run YAML'}
+            </Button>
           </Box>
         </Box>
         {steps.length === 0 && (
@@ -504,6 +548,54 @@ export default function TestEditorScreen({
           />
         )}
       </Paper>
+
+      <Dialog open={yamlRunOpen} onClose={() => setYamlRunOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle>
+          Run YAML{yamlSave && yamlSave.relativePath ? `: ${yamlSave.relativePath}` : ''}
+        </DialogTitle>
+        <DialogContent dividers>
+          {yamlRunning && <Typography variant="body2">Running the scenario…</Typography>}
+          {yamlRunError && <Alert severity="error">{yamlRunError}</Alert>}
+          {yamlRunResult && (
+            <Box>
+              <Alert severity={yamlRunResult.ok ? 'success' : 'error'} sx={{ mb: 2 }}>
+                {yamlRunResult.ok ? 'Passed' : 'Failed'} in {Math.round(yamlRunResult.durationMs || 0)} ms
+                {yamlRunResult.error ? ` — ${yamlRunResult.error}` : ''}
+              </Alert>
+              <Box component="ol" sx={{ pl: 2, mb: 2 }}>
+                {(yamlRunResult.steps || []).map((step, index) => (
+                  <li key={`${index}-${step.name}`}>
+                    <Typography variant="body2" sx={{ color: step.ok ? 'success.main' : 'error.main' }}>
+                      {step.ok ? '✓' : '✗'} {step.name}
+                      {step.error ? ` — ${step.error}` : ''}
+                    </Typography>
+                  </li>
+                ))}
+              </Box>
+              {yamlImages.length > 0 && (
+                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 1 }}>
+                  {yamlImages.map((image) => (
+                    <Box key={image.key}>
+                      <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                        Step {image.step} · {image.action} · {image.phase}
+                      </Typography>
+                      <Box
+                        component="img"
+                        src={image.src}
+                        alt={`Step ${image.step} ${image.phase}`}
+                        sx={{ width: '100%', border: '1px solid', borderColor: 'divider', borderRadius: 1 }}
+                      />
+                    </Box>
+                  ))}
+                </Box>
+              )}
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setYamlRunOpen(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

@@ -78,6 +78,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
   parsePage: (source, viewport, requestOptions) => ipcRenderer.invoke('parser:parsePage', source, viewport, requestOptions),
   // NATL scenario files (YAML)
   natlSaveScenario: (testId, options) => ipcRenderer.invoke('natl:saveScenario', testId, options || {}),
+  natlRunScenario: (filePath, options) => ipcRenderer.invoke('natl:runScenario', filePath, options || {}),
+  natlReadScreenshot: (filePath) => ipcRenderer.invoke('natl:readScreenshot', filePath),
+  onNatlRunProgress: (cb) => {
+    const fn = (_, payload) => cb(payload);
+    ipcRenderer.on('main:natl-run-progress', fn);
+    return () => ipcRenderer.removeListener('main:natl-run-progress', fn);
+  },
   onTestRunProgress: (cb) => {
     const fn = (_, e) => cb(e);
     ipcRenderer.on('main:test-run-progress', fn);
