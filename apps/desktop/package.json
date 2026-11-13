@@ -1,7 +1,7 @@
 {
-  "name": "testblox",
-  "version": "1.1.0",
-  "description": "TestBlox - no-code test automation with Git integration",
+  "name": "natl-desktop",
+  "version": "2.0.0",
+  "description": "NATL — record a path through your app, get a YAML test you can run here or in CI",
   "main": "electron/main.js",
   "private": true,
   "scripts": {
@@ -48,8 +48,8 @@
     "wait-on": "^8.0.1"
   },
   "build": {
-    "appId": "com.testblox.desktop",
-    "productName": "TestBlox",
+    "appId": "dev.natl.desktop",
+    "productName": "NATL",
     "icon": "electron/assets/icon.png",
     "directories": {
       "output": "dist"
