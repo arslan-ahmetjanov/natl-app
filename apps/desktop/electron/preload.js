@@ -76,6 +76,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   reportsGetScreenshot: (reportId, filename) => ipcRenderer.invoke('reports:getScreenshot', reportId, filename),
   reportsDelete: (reportId) => ipcRenderer.invoke('reports:delete', reportId),
   parsePage: (source, viewport, requestOptions) => ipcRenderer.invoke('parser:parsePage', source, viewport, requestOptions),
+  // NATL scenario files (YAML)
+  natlSaveScenario: (testId, options) => ipcRenderer.invoke('natl:saveScenario', testId, options || {}),
   onTestRunProgress: (cb) => {
     const fn = (_, e) => cb(e);
     ipcRenderer.on('main:test-run-progress', fn);

@@ -380,4 +380,8 @@ registerGenerateTestsIpc();
 const registerParserIpc = require('./ipc/parser');
 registerParserIpc();
 
+// --- NATL scenario files (YAML) ---
+const { registerNatlIpc } = require('./ipc/natl');
+registerNatlIpc();
+
 // --- Tests run + reports (registered in whenReady after createWindow) ---

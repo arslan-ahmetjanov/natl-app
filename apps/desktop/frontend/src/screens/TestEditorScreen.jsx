@@ -48,9 +48,25 @@ export default function TestEditorScreen({
   const [runReport, setRunReport] = useState(null);
   const [runError, setRunError] = useState(null);
   const [savedStepsSignature, setSavedStepsSignature] = useState(null);
+  const [yamlSaving, setYamlSaving] = useState(false);
+  const [yamlSave, setYamlSave] = useState(null);
   const [sharedStepPickKey, setSharedStepPickKey] = useState(0);
   const sharedStepAcToolbarRef = useRef(null);
   const sharedStepAcEmptyRef = useRef(null);
+
+  const handleSaveAsYaml = async () => {
+    if (!window.electronAPI || !testId) return;
+    setYamlSaving(true);
+    setYamlSave(null);
+    try {
+      const result = await window.electronAPI.natlSaveScenario(testId, {});
+      setYamlSave(result);
+    } catch (err) {
+      setYamlSave({ error: err && err.message ? err.message : String(err) });
+    } finally {
+      setYamlSaving(false);
+    }
+  };
 
   useEffect(() => {
     if (!testId || !window.electronAPI) return;
@@ -399,6 +415,34 @@ export default function TestEditorScreen({
           You have unsaved step changes. Click Save to persist them to the workspace.
         </Alert>
       )}
+      {yamlSave && (
+        <Alert
+          severity={
+            yamlSave.error
+              ? 'error'
+              : yamlSave.unsupported && yamlSave.unsupported.length
+                ? 'warning'
+                : 'success'
+          }
+          sx={{ mb: 2 }}
+          onClose={() => setYamlSave(null)}
+        >
+          {yamlSave.error
+            ? `YAML not saved: ${yamlSave.error}`
+            : `YAML saved: ${yamlSave.relativePath}`}
+          {!yamlSave.error && yamlSave.unsupported && yamlSave.unsupported.length > 0 && (
+            <Box component="ul" sx={{ mt: 1, mb: 0, pl: 2 }}>
+              {yamlSave.unsupported.map((item) => (
+                <li key={`${item.index}-${item.action || 'step'}`}>
+                  <Typography variant="body2">
+                    Step {item.index + 1}: {item.action || 'step'} — {item.reason}
+                  </Typography>
+                </li>
+              ))}
+            </Box>
+          )}
+        </Alert>
+      )}
       <Paper sx={{ p: 2, mb: 2, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2, flexWrap: 'wrap', gap: 1 }}>
           <SectionLabel sx={{ mb: 0 }}>Steps</SectionLabel>
@@ -415,6 +459,9 @@ export default function TestEditorScreen({
               </Typography>
             )}
             <Button size="small" variant={stepsDirty ? 'contained' : 'outlined'} color="primary" onClick={handleSaveSteps} disabled={saving}>Save steps</Button>
+            <Button size="small" variant="outlined" color="primary" onClick={handleSaveAsYaml} disabled={yamlSaving}>
+              {yamlSaving ? 'Saving YAML…' : 'Save as YAML'}
+            </Button>
           </Box>
         </Box>
         {steps.length === 0 && (
