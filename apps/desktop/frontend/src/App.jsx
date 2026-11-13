@@ -131,11 +131,10 @@ const darkTheme = createTheme({
 });
 
 function getInitialThemeMode() {
-  if (typeof window === 'undefined') return 'dark';
+  if (typeof window === 'undefined') return 'light';
   const stored = localStorage.getItem(THEME_STORAGE_KEY);
   if (stored === 'light' || stored === 'dark') return stored;
-  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) return 'light';
-  return 'dark';
+  return 'light';
 }
 
 export default function App() {
