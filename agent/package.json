@@ -67,8 +67,8 @@
     "url": "git+https://github.com/natl-dev/natl.git",
     "directory": "agent"
   },
-  "homepage": "https://natl-dev.github.io/natl/",
+  "homepage": "https://arslan-ahmetjanov.github.io/natl-site/",
   "bugs": {
-    "url": "https://github.com/natl-dev/natl/issues"
+    "url": "https://github.com/arslan-ahmetjanov/natl-app/issues"
   }
 }

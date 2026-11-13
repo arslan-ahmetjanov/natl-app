@@ -111,8 +111,14 @@ npm run build    # установщик в dist/
 
 ## Документация
 
+Сайт: **https://arslan-ahmetjanov.github.io/natl-site/** — установка, руководство,
+песочница, ошибки, архитектура.
+
 - [`docs/design/2026-11-13-product.md`](./docs/design/2026-11-13-product.md) — позиционирование, метрики, архитектура.
 - [`docs/design/2026-11-13-mvp.md`](./docs/design/2026-11-13-mvp.md) — границы MVP.
+- [`docs/roadmap-1.0.md`](./docs/roadmap-1.0.md) — что осталось до 1.0.0.
+- [`docs/versioning.md`](./docs/versioning.md) — схема версий.
+- [`docs/repositories.md`](./docs/repositories.md) — карта репозиториев.
 - [`docs/adr/`](./docs/adr/) — принятые решения.
 - `core/docs/` — язык и API.
 

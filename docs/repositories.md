@@ -99,3 +99,12 @@ npm login
 cd C:/Users/arsla/Desktop/natl-app/core && npm publish --access public
 # и так далее для cli, adapters, agent
 ```
+
+## Состояние
+
+Сделано: репозитории `natl-app`, `natl` и `natl-site` публичны; сайт
+опубликован на `https://arslan-ahmetjanov.github.io/natl-site/` через
+GitHub Actions; метаданные пакетов переведены на бренд NATL IDE.
+
+Осталось: публикация пакетов в npm (нужен `npm login`) и доска GitHub
+Projects (нужен scope `project`: `gh auth refresh -s project`).
