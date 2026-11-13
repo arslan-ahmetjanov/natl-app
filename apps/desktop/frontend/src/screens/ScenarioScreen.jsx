@@ -49,6 +49,12 @@ function formatBytes(bytes) {
   return `${(bytes / 1024 / 1024).toFixed(1)} МБ`;
 }
 
+function formatBackupTime(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? '' : date.toLocaleString();
+}
+
 /**
  * Экран сценария: файл сверху, отчёт снизу, проверка до запуска.
  * Скриншоты — отдельной каруселью и с уборкой, чтобы не копились гигабайты.
@@ -71,6 +77,10 @@ export default function ScenarioScreen({ relativePath, title, workspacePath, onB
   const [artifacts, setArtifacts] = useState({ runs: 0, files: 0, bytes: 0 });
   const [newName, setNewName] = useState('');
   const [actionError, setActionError] = useState(null);
+  const [backup, setBackup] = useState(null);
+  const [restoreOpen, setRestoreOpen] = useState(false);
+  const [restoreBusy, setRestoreBusy] = useState(false);
+  const [restoreNotice, setRestoreNotice] = useState(null);
   const [headless, setHeadless] = useState(() => localStorage.getItem(HEADLESS_KEY) !== '0');
   const timer = useRef(null);
   const lintTimer = useRef(null);
@@ -92,6 +102,44 @@ export default function ScenarioScreen({ relativePath, title, workspacePath, onB
     setRun(null);
   }, [load]);
 
+  // Предыдущая версия, если приложение наткнулось на битый YAML при сохранении.
+  const loadBackup = useCallback(async () => {
+    if (!api || !api.natlListBackups) return;
+    try {
+      const list = await api.natlListBackups();
+      setBackup((list || []).find((item) => item.relativePath === relativePath) || null);
+    } catch {
+      setBackup(null);
+    }
+  }, [api, relativePath]);
+
+  useEffect(() => {
+    loadBackup();
+  }, [loadBackup]);
+
+  const restore = async () => {
+    if (!api || !api.natlRestoreBackup) return;
+    // Автосохранение не должно записать старый текст поверх восстановленного.
+    if (timer.current) clearTimeout(timer.current);
+    setRestoreBusy(true);
+    try {
+      const result = await api.natlRestoreBackup(relativePath);
+      await load();
+      setRestoreOpen(false);
+      setRestoreNotice(
+        result && result.savedTo
+          ? `Версия восстановлена. Прежняя сохранена как ${result.savedTo}`
+          : 'Версия восстановлена.',
+      );
+      await loadBackup();
+    } catch (err) {
+      setRestoreOpen(false);
+      setActionError(humanizeError(err, { file: relativePath }));
+    } finally {
+      setRestoreBusy(false);
+    }
+  };
+
   useEffect(() => {
     api.natlArtifactsInfo().then(setArtifacts).catch(() => {});
   }, [api, run]);
@@ -104,15 +152,17 @@ export default function ScenarioScreen({ relativePath, title, workspacePath, onB
 
     timer.current = setTimeout(async () => {
       try {
-        await api.natlWriteScenario({ relativePath, text });
+        const result = await api.natlWriteScenario({ relativePath, text });
         setSavedText(text);
         setState({ status: 'saved', at: new Date() });
+        // Битая запись оставила предыдущую версию в .bak — показываем сразу.
+        if (result && result.backup) loadBackup();
       } catch (err) {
         setState({ status: 'error', message: err && err.message ? err.message : String(err) });
       }
     }, AUTOSAVE_MS);
     return undefined;
-  }, [text, savedText, api, relativePath]);
+  }, [text, savedText, api, relativePath, loadBackup]);
 
   // Проверка до запуска
   useEffect(() => {
@@ -214,6 +264,7 @@ export default function ScenarioScreen({ relativePath, title, workspacePath, onB
   const errorCount = issues.issues.filter((item) => item.severity === 'error').length;
   const warningCount = issues.issues.length - errorCount;
   const shotCount = run && run.images ? run.images.length : 0;
+  const hasUnsavedEdits = text !== savedText;
 
   const hotkeys = useMemo(
     () => ({
@@ -364,6 +415,25 @@ export default function ScenarioScreen({ relativePath, title, workspacePath, onB
           {actionError}
         </Alert>
       )}
+      {restoreNotice && (
+        <Alert severity="success" onClose={() => setRestoreNotice(null)} sx={{ borderRadius: 0 }}>
+          {restoreNotice}
+        </Alert>
+      )}
+      {backup && (
+        <Alert
+          severity="warning"
+          sx={{ borderRadius: 0 }}
+          action={(
+            <Button color="inherit" size="small" onClick={() => setRestoreOpen(true)}>
+              Восстановить
+            </Button>
+          )}
+        >
+          <Box component="span" sx={{ fontWeight: 600 }}>Есть предыдущая версия</Box>
+          {' '}от {formatBackupTime(backup.mtime)}
+        </Alert>
+      )}
       {errorCount > 0 && (
         <Alert severity="error" sx={{ borderRadius: 0 }}>
           Запуск заблокирован: исправьте ошибки в сценарии. Нажмите на счётчик проверки, чтобы увидеть список.
@@ -455,6 +525,30 @@ export default function ScenarioScreen({ relativePath, title, workspacePath, onB
         onSave={(step) => addStep(step)}
       />
       <ScreenshotCarousel open={shotsOpen} onClose={() => setShotsOpen(false)} images={run && run.images ? run.images : []} />
+
+      <Dialog open={restoreOpen} onClose={() => setRestoreOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>Восстановить предыдущую версию?</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2">
+            Файл будет заменён предыдущей версией
+            {backup && backup.mtime ? ` от ${formatBackupTime(backup.mtime)}` : ''}.
+          </Typography>
+          <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>
+            Текущая версия сохранится рядом как {relativePath}.before-restore — её можно вернуть вручную.
+          </Typography>
+          {hasUnsavedEdits && (
+            <Alert severity="warning" sx={{ mt: 1 }}>
+              Несохранённые правки в редакторе будут потеряны.
+            </Alert>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRestoreOpen(false)} sx={{ color: 'text.secondary' }}>Отмена</Button>
+          <Button variant="contained" color="warning" onClick={restore} disabled={restoreBusy}>
+            Восстановить
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Dialog open={cleanOpen} onClose={() => setCleanOpen(false)} maxWidth="xs" fullWidth>
         <DialogTitle>Очистить скриншоты</DialogTitle>

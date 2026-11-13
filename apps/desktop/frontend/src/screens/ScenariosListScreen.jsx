@@ -22,13 +22,19 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 /** Экран списка: все сценарии рабочей папки. */
 export default function ScenariosListScreen({ onOpen, onRecord, refreshToken = 0 }) {
   const [scenarios, setScenarios] = useState([]);
+  const [backupPaths, setBackupPaths] = useState(() => new Set());
   const [error, setError] = useState(null);
   const [query, setQuery] = useState('');
   const api = window.electronAPI;
 
   const load = useCallback(async () => {
     try {
-      setScenarios((await api.natlListScenarios()) || []);
+      const [list, backups] = await Promise.all([
+        api.natlListScenarios(),
+        api.natlListBackups ? api.natlListBackups() : Promise.resolve([]),
+      ]);
+      setScenarios(list || []);
+      setBackupPaths(new Set((backups || []).map((item) => item.relativePath)));
       setError(null);
     } catch (err) {
       setError(err && err.message ? err.message : String(err));
@@ -103,6 +109,11 @@ export default function ScenariosListScreen({ onOpen, onRecord, refreshToken = 0
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       {scenario.name}
                       {scenario.error && <Chip size="small" color="warning" label="ошибка" />}
+                      {backupPaths.has(scenario.relativePath) && (
+                        <Tooltip title="Есть предыдущая версия — её можно восстановить на экране сценария">
+                          <Chip size="small" variant="outlined" color="warning" label="предыдущая версия" />
+                        </Tooltip>
+                      )}
                     </Box>
                   </TableCell>
                   <TableCell sx={{ color: 'text.secondary', fontFamily: 'monospace', fontSize: 12 }}>

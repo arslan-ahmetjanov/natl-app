@@ -7,7 +7,7 @@
   "scripts": {
     "start": "electron .",
     "dev": "electron .",
-    "test:natl": "node --test electron/natl/convert.test.js electron/natl/store.test.js electron/natl/save.test.js electron/natl/run.test.js electron/natl/recorder.test.js electron/natl/log.test.js electron/natl/scenario.test.js electron/natl/ai.test.js electron/natl/agent-chat.test.js electron/natl/resources.test.js electron/natl/lint.test.js electron/natl/artifacts.test.js electron/services/browserRuntime.test.js",
+    "test:natl": "node --test electron/natl/convert.test.js electron/natl/store.test.js electron/natl/save.test.js electron/natl/run.test.js electron/natl/recorder.test.js electron/natl/log.test.js electron/natl/scenario.test.js electron/natl/ai.test.js electron/natl/agent-chat.test.js electron/natl/resources.test.js electron/natl/lint.test.js electron/natl/artifacts.test.js electron/natl/backup.test.js electron/natl/integrity.test.js electron/services/browserRuntime.test.js",
     "browser:install": "node scripts/install-browser.js",
     "smoke:natl": "node scripts/smoke-natl-run.js",
     "smoke:record": "node scripts/smoke-natl-recorder.js",

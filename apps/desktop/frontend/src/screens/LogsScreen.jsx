@@ -12,6 +12,7 @@ import BugReportIcon from '@mui/icons-material/BugReport';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
+import SaveAltIcon from '@mui/icons-material/SaveAlt';
 
 const LEVELS = ['all', 'debug', 'info', 'warn', 'error', 'fatal'];
 
@@ -37,6 +38,7 @@ export default function LogsScreen({ onBack }) {
   const [error, setError] = useState(null);
   const [logPath, setLogPath] = useState('');
   const [copied, setCopied] = useState(false);
+  const [saveState, setSaveState] = useState(null);
   const bottomRef = useRef(null);
 
   const api = window.electronAPI;
@@ -88,6 +90,19 @@ export default function LogsScreen({ onBack }) {
     load();
   };
 
+  // Сохраняем то, что видно на экране: те же фильтры уходят в файл.
+  const saveToFile = async () => {
+    if (!api || !api.logsSave) return;
+    try {
+      const result = await api.logsSave({ level, query });
+      if (result && result.saved) setSaveState({ path: result.path });
+      else if (result && result.error) setSaveState({ error: result.error });
+      else setSaveState(null);
+    } catch (err) {
+      setSaveState({ error: err && err.message ? err.message : String(err) });
+    }
+  };
+
   const counts = useMemo(() => {
     const result = { all: entries.length };
     for (const entry of entries) result[entry.level] = (result[entry.level] || 0) + 1;
@@ -103,6 +118,9 @@ export default function LogsScreen({ onBack }) {
           <Button size="small" onClick={onBack} sx={{ color: 'text.secondary' }}>Back</Button>
         )}
         <Box sx={{ flex: 1 }} />
+        <Button size="small" startIcon={<SaveAltIcon />} onClick={saveToFile}>
+          Сохранить в файл
+        </Button>
         <Button size="small" startIcon={<ContentCopyIcon />} onClick={copyAll}>
           {copied ? 'Copied' : 'Copy'}
         </Button>
@@ -146,6 +164,16 @@ export default function LogsScreen({ onBack }) {
       </Box>
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {saveState && saveState.path && (
+        <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSaveState(null)}>
+          Журнал сохранён: {saveState.path}
+        </Alert>
+      )}
+      {saveState && saveState.error && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setSaveState(null)}>
+          Не удалось сохранить журнал: {saveState.error}
+        </Alert>
+      )}
       {logPath && (
         <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 1 }}>
           Файл: {logPath}

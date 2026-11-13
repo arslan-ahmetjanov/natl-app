@@ -15,6 +15,9 @@ try {
 const filestore = require('./store/filestore');
 const lastOpenedWorkspaces = require('./store/lastOpenedWorkspaces');
 const { registerWorkspaceIpc, setCurrentPath } = require('./ipc/workspace');
+const { getAppInfo } = require('./appInfo');
+const { getStore } = require('./ipc/logs');
+const { checkWorkspace } = require('./natl/integrity');
 
 let mainWindow = null;
 
@@ -182,6 +185,23 @@ ipcMain.handle('workspace:openFolder', async (_, folderPath) => {
   return { path: folderPath, workspace: meta, pages };
 });
 
+// Проверка файлов после открытия папки. Только чтение и разбор YAML: битый
+// файл становится строкой в диалоге, а не поводом не открыть проект.
+ipcMain.handle('workspace:checkIntegrity', () => {
+  const { getCurrentPath } = require('./ipc/workspace');
+  const root = getCurrentPath();
+  if (!root) return { ok: true, checked: 0, problems: [] };
+
+  const result = checkWorkspace(root);
+  if (result.problems.length > 0) {
+    getStore().info('workspace', `проверка файлов: замечаний ${result.problems.length}`, {
+      checked: result.checked,
+      errors: result.problems.filter((item) => item.level === 'error').length,
+    });
+  }
+  return result;
+});
+
 ipcMain.handle('workspace:getLastOpened', () => {
   return lastOpenedWorkspaces.getValid(filestore.isWorkspace);
 });
@@ -344,14 +364,7 @@ ipcMain.handle('app:getPath', (_, name) => app.getPath(name));
 
 // Версия и канал сборки: показываются в интерфейсе, чтобы поддержка понимала,
 // с чем именно имеет дело пользователь.
-ipcMain.handle('app:info', () => ({
-  version: app.getVersion(),
-  name: app.getName(),
-  channel: 'community',
-  platform: process.platform,
-  arch: process.arch,
-  electron: process.versions.electron,
-}));
+ipcMain.handle('app:info', () => getAppInfo());
 
 // Терминал открывается системный, в папке проекта. Свой терминал не нужен:
 // встроенный эмулятор — отдельный продукт, а git и npm уже настроены в системе.

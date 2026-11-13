@@ -56,6 +56,8 @@ export default function WorkspaceView({
   onOpenFolder,
   onCloseWorkspace,
   onOpenBrowserSetup,
+  openRequest,
+  onOpenRequestHandled,
 }) {
   const [view, setView] = useState('dashboard');
   const [selected, setSelected] = useState(null);
@@ -74,6 +76,15 @@ export default function WorkspaceView({
     setSelected({ relativePath, title });
     setView('scenario');
   };
+
+  // Переход к файлу из диалога проверки: тот же выбор сценария, что и из списка.
+  useEffect(() => {
+    if (!openRequest || !openRequest.relativePath) return;
+    const fileName = openRequest.relativePath.split('/').pop().replace(/\.ya?ml$/i, '');
+    openScenario(openRequest.relativePath, fileName);
+    if (onOpenRequestHandled) onOpenRequestHandled();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openRequest]);
 
   const navItem = (item) => (
     <ListItemButton

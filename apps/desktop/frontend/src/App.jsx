@@ -3,6 +3,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { Box, CircularProgress, CssBaseline } from '@mui/material';
 import WelcomeScreen from './screens/WelcomeScreen';
 import BrowserSetupDialog from './components/BrowserSetupDialog';
+import IntegrityDialog from './components/IntegrityDialog';
 import { DEFAULT_BRAND, paletteFor } from './themes';
 
 // WorkspaceView тянет CodeMirror; грузим его отдельно, чтобы вход открывался сразу.
@@ -116,6 +117,8 @@ export default function App() {
   const [workspace, setWorkspace] = useState(null);
   const [browserDialogOpen, setBrowserDialogOpen] = useState(false);
   const [browserReady, setBrowserReady] = useState(false);
+  const [integrityReport, setIntegrityReport] = useState(null);
+  const [openRequest, setOpenRequest] = useState(null);
 
   const isElectron = typeof window !== 'undefined' && window.electronAPI;
   const theme = useMemo(() => createNatlTheme(BRAND, themeMode), [themeMode]);
@@ -164,6 +167,20 @@ export default function App() {
 
   const openBrowserSetup = () => setBrowserDialogOpen(true);
 
+  // Проверка файлов после открытия папки: битый сценарий — повод показать
+  // список, а не повод не открыть проект. Поэтому вызывается после и не ждёт.
+  const checkIntegrity = () => {
+    const api = window.electronAPI;
+    if (!api?.workspaceCheckIntegrity) return;
+    api.workspaceCheckIntegrity()
+      .then((report) => {
+        if (report && Array.isArray(report.problems) && report.problems.length > 0) {
+          setIntegrityReport(report);
+        }
+      })
+      .catch(() => {});
+  };
+
   const handleOpenFolder = async (path) => {
     if (!isElectron || !path) return;
     try {
@@ -171,6 +188,7 @@ export default function App() {
       if (result) {
         setWorkspacePath(result.path);
         setWorkspace(result.workspace);
+        checkIntegrity();
       }
     } catch (err) {
       console.error(err);
@@ -219,6 +237,8 @@ export default function App() {
             onOpenFolder={handleOpenFolder}
             onCloseWorkspace={handleCloseWorkspace}
             onOpenBrowserSetup={openBrowserSetup}
+            openRequest={openRequest}
+            onOpenRequestHandled={() => setOpenRequest(null)}
           />
         </Suspense>
       )}
@@ -226,6 +246,14 @@ export default function App() {
         open={browserDialogOpen}
         onClose={() => setBrowserDialogOpen(false)}
         onReady={() => setBrowserReady(true)}
+      />
+      <IntegrityDialog
+        report={integrityReport}
+        onClose={() => setIntegrityReport(null)}
+        onOpen={(relativePath) => {
+          setIntegrityReport(null);
+          setOpenRequest({ relativePath });
+        }}
       />
     </ThemeProvider>
   );

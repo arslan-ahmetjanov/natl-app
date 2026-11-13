@@ -1,9 +1,11 @@
 'use strict';
 
+const fs = require('node:fs');
 const path = require('node:path');
-const { app, ipcMain, shell, BrowserWindow } = require('electron');
+const { app, dialog, ipcMain, shell, BrowserWindow } = require('electron');
 
 const { LogStore } = require('../natl/log');
+const { getAppInfo } = require('../appInfo');
 
 /**
  * The app's single log sink.
@@ -35,6 +37,62 @@ function broadcast(entry) {
       win.webContents.send('main:log-entry', entry);
     }
   }
+}
+
+/** Имя файла журнала: natl-log-2026-11-14-1830.txt. */
+function logFileName(date) {
+  const pad = (value) => String(value).padStart(2, '0');
+  const stamp = [
+    date.getFullYear(),
+    pad(date.getMonth() + 1),
+    pad(date.getDate()),
+  ].join('-');
+  return `natl-log-${stamp}-${pad(date.getHours())}${pad(date.getMinutes())}.txt`;
+}
+
+/**
+ * Шапка сохранённого журнала.
+ *
+ * Только то, что спросит поддержка: версия сборки, платформа, папки и есть ли
+ * Chromium. Никаких ключей API и токенов — файл уходит в переписку.
+ */
+function buildReportHeader() {
+  const lines = [];
+  const info = getAppInfo();
+  lines.push('NATL IDE — журнал приложения');
+  lines.push(`Версия: ${info.version} (${info.name})`);
+  lines.push(`Канал: ${info.channel}`);
+  lines.push(`Платформа: ${info.platform} ${info.arch}`);
+  lines.push(`Electron: ${info.electron}`);
+  lines.push(`Сформирован: ${new Date().toISOString()}`);
+
+  try {
+    lines.push(`Папка данных: ${app.getPath('userData')}`);
+  } catch {
+    lines.push('Папка данных: неизвестна');
+  }
+
+  try {
+    const browserRuntime = require('../services/browserRuntime');
+    const status = browserRuntime.getStatus(app.getPath('userData'));
+    lines.push(`Папка браузеров: ${status.browsersDir || 'неизвестна'}`);
+    lines.push(`Chromium: ${status.installed ? 'установлен' : 'не установлен'}`);
+    if (status.installed && status.executablePath) {
+      lines.push(`Chromium, файл: ${status.executablePath}`);
+    }
+  } catch (err) {
+    lines.push(`Папка браузеров: не определена (${err && err.message ? err.message : err})`);
+  }
+
+  try {
+    const { getCurrentPath } = require('./workspace');
+    const root = getCurrentPath();
+    lines.push(`Рабочая папка: ${root || 'не открыта'}`);
+  } catch {
+    lines.push('Рабочая папка: неизвестна');
+  }
+
+  return lines.join('\n');
 }
 
 /** Console output from the main process also lands in the log. */
@@ -114,6 +172,33 @@ function registerLogsIpc() {
     if (!filePath) return { opened: false };
     shell.showItemInFolder(filePath);
     return { opened: true, filePath };
+  });
+
+  // Журнал в файл: пользователь прикладывает его к письму, поддержка читает.
+  // Ошибка записи возвращается как значение, а не исключение: экран журнала
+  // должен показать её рядом с кнопкой, а не упасть.
+  ipcMain.handle('logs:save', async (event, filter) => {
+    const owner = BrowserWindow.fromWebContents(event.sender) || BrowserWindow.getFocusedWindow();
+    const options = {
+      title: 'Сохранить журнал',
+      defaultPath: logFileName(new Date()),
+      filters: [{ name: 'Текстовый файл', extensions: ['txt'] }],
+    };
+    const { canceled, filePath } = owner
+      ? await dialog.showSaveDialog(owner, options)
+      : await dialog.showSaveDialog(options);
+    if (canceled || !filePath) return { saved: false, canceled: true };
+
+    try {
+      const body = logStore.toText(filter || {});
+      fs.writeFileSync(filePath, `${buildReportHeader()}\n\n${body}\n`, 'utf8');
+      logStore.info('logs', `журнал сохранён: ${filePath}`);
+      return { saved: true, path: filePath };
+    } catch (err) {
+      const message = err && err.message ? err.message : String(err);
+      logStore.error('logs', `журнал не сохранён: ${message}`);
+      return { saved: false, error: message };
+    }
   });
 
   logStore.info('logs', 'журнал запущен');

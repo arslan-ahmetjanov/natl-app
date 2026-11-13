@@ -31,6 +31,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   // Workspace (file store)
   getWorkspacePath: () => ipcRenderer.invoke('workspace:getCurrentPath'),
+  workspaceCheckIntegrity: () => ipcRenderer.invoke('workspace:checkIntegrity'),
   getLastOpenedWorkspaces: () => ipcRenderer.invoke('workspace:getLastOpened'),
   openFolderAndLoad: (path) => ipcRenderer.invoke('workspace:openFolder', path),
   closeWorkspace: () => ipcRenderer.invoke('workspace:close'),
@@ -95,6 +96,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   logsText: (filter) => ipcRenderer.invoke('logs:text', filter || {}),
   logsPath: () => ipcRenderer.invoke('logs:path'),
   logsOpenFile: () => ipcRenderer.invoke('logs:openFile'),
+  logsSave: (filter) => ipcRenderer.invoke('logs:save', filter || {}),
   onLogEntry: (cb) => {
     const fn = (_, entry) => cb(entry);
     ipcRenderer.on('main:log-entry', fn);
@@ -127,6 +129,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   natlCleanArtifacts: (options) => ipcRenderer.invoke('natl:cleanArtifacts', options || {}),
   natlReadScenario: (relativePath) => ipcRenderer.invoke('natl:readScenario', relativePath),
   natlWriteScenario: (payload) => ipcRenderer.invoke('natl:writeScenario', payload || {}),
+  natlListBackups: () => ipcRenderer.invoke('natl:listBackups'),
+  natlRestoreBackup: (relativePath) => ipcRenderer.invoke('natl:restoreBackup', relativePath),
   aiGenerateSteps: (payload) => ipcRenderer.invoke('ai:generateSteps', payload || {}),
   aiChat: (payload) => ipcRenderer.invoke('ai:chat', payload || {}),
   onNatlRecordProgress: (cb) => {

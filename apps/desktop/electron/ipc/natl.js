@@ -14,6 +14,7 @@ const { scenarioSummary } = require('../natl/scenario');
 const resources = require('../natl/resources');
 const artifacts = require('../natl/artifacts');
 const { lintYaml } = require('../natl/lint');
+const { listBackups, restoreBackup } = require('../natl/backup');
 const { generateSteps } = require('../natl/ai');
 const { chat } = require('../natl/agent-chat');
 const { getStore } = require('./logs');
@@ -225,6 +226,25 @@ function registerNatlIpc() {
 
   // Проверка до запуска
   ipcMain.handle('natl:lint', (_, text) => lintYaml(text));
+
+  // Восстановление после сбоя: прошлые версии, которые writeScenario сложил в .bak
+  ipcMain.handle('natl:listBackups', async () => {
+    const backups = listBackups(currentRoot());
+    if (backups.length > 0) {
+      getStore().warn('natl', `есть предыдущие версии сценариев: ${backups.length}`, {
+        files: backups.map((item) => item.relativePath).slice(0, 10),
+      });
+    }
+    return backups;
+  });
+
+  ipcMain.handle('natl:restoreBackup', async (_, relativePath) => {
+    const result = restoreBackup(currentRoot(), relativePath);
+    getStore().info('natl', `сценарий восстановлен из .bak: ${result.relativePath}`, {
+      savedTo: result.savedTo,
+    });
+    return result;
+  });
 
   // CRUD сценариев
   ipcMain.handle('natl:deleteScenario', async (_, relativePath) => {
