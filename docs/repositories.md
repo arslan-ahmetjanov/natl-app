@@ -8,7 +8,7 @@
 
 | Репозиторий | Роль | Видимость | Выпуск |
 |---|---|---|---|
-| [`natl-app`](https://github.com/arslan-ahmetjanov/natl-app) | продукт: приложение, установщики | публичный | теги `v0.x.y`, релизы |
+| [`natl-ide`](https://github.com/arslan-ahmetjanov/natl-ide) | продукт: приложение, установщики | публичный | теги `v0.x.y`, релизы |
 | [`natl`](https://github.com/arslan-ahmetjanov/natl) | движок: `@natl/core`, CLI, адаптеры, агент | публичный | npm `1.x` |
 | [`natl-site`](https://github.com/arslan-ahmetjanov/natl-site) | сайт документации | публичный | GitHub Pages |
 | `testblox`, `testblox-mcp`, `testblox-runner` | прототипы до объединения | архив | не выпускаются |
@@ -28,7 +28,7 @@ GitHub Projects — это доска, а не хранилище кода. Он
 из всех репозиториев в одном месте, не перенося код.
 
 1. Создать проект: `gh project create --owner arslan-ahmetjanov --title "NATL IDE"`.
-2. Добавить репозитории: `gh project link 1 --owner arslan-ahmetjanov --repo arslan-ahmetjanov/natl-app`
+2. Добавить репозитории: `gh project link 1 --owner arslan-ahmetjanov --repo arslan-ahmetjanov/natl-ide`
    (и так же для `natl` и `natl-site`).
 3. Разложить задачи из `docs/roadmap-1.0.md` в issues с метками
    `блокер`, `качество`, `продукт`, `документация`.
@@ -83,26 +83,26 @@ GitHub Projects — это доска, а не хранилище кода. Он
 
 ```bash
 # 1. приложение и сайт
-cd C:/Users/arsla/Desktop/natl-app && git push
+cd C:/Users/arsla/Desktop/natl-ide && git push
 cd C:/Users/arsla/Desktop/natl-site && git push -u origin main
 
 # 2. Pages
 gh api -X POST repos/arslan-ahmetjanov/natl-site/pages -f build_type=workflow
 
 # 3. публичность и связи
-gh repo edit arslan-ahmetjanov/natl-app --visibility public --accept-visibility-change-consequences
+gh repo edit arslan-ahmetjanov/natl-ide --visibility public --accept-visibility-change-consequences
 gh repo edit arslan-ahmetjanov/natl --visibility public --accept-visibility-change-consequences
 gh project create --owner arslan-ahmetjanov --title "NATL IDE"
 
 # 4. npm
 npm login
-cd C:/Users/arsla/Desktop/natl-app/core && npm publish --access public
+cd C:/Users/arsla/Desktop/natl-ide/core && npm publish --access public
 # и так далее для cli, adapters, agent
 ```
 
 ## Состояние
 
-Сделано: репозитории `natl-app`, `natl` и `natl-site` публичны; сайт
+Сделано: репозитории `natl-ide`, `natl` и `natl-site` публичны; сайт
 опубликован на `https://arslan-ahmetjanov.github.io/natl-site/` через
 GitHub Actions; метаданные пакетов переведены на бренд NATL IDE.
 
