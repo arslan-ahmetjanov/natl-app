@@ -6,38 +6,41 @@ import {
   Chip,
   Divider,
   IconButton,
-  Paper,
-  Tab,
-  Tabs,
+  ToggleButton,
+  ToggleButtonGroup,
   Tooltip,
   Typography,
   useTheme,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import AddIcon from '@mui/icons-material/Add';
+import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import YamlEditor from '../components/YamlEditor';
-import StepBuilder from '../components/StepBuilder';
-import AiPanel from '../components/AiPanel';
+import StepDialog from '../components/StepDialog';
+import ScenarioSteps from '../components/ScenarioSteps';
+import ScreenshotCarousel from '../components/ScreenshotCarousel';
 
 const AUTOSAVE_MS = 700;
 
-/** Экран одного сценария: редактор и панель, которую можно свернуть. */
-export default function ScenarioScreen({
-  relativePath,
-  title,
-  workspacePath,
-  onBack,
-  onOpenSettings,
-}) {
+/**
+ * Экран сценария.
+ *
+ * Сверху — файл, снизу — отчёт. Скриншоты в отчёт по умолчанию не попадают:
+ * их открывает отдельная кнопка, чтобы результат читался, а не листался.
+ */
+export default function ScenarioScreen({ relativePath, title, workspacePath, onBack }) {
   const theme = useTheme();
   const [text, setText] = useState('');
   const [savedText, setSavedText] = useState('');
   const [state, setState] = useState(null);
+  const [mode, setMode] = useState('human');
   const [panelOpen, setPanelOpen] = useState(true);
-  const [panelTab, setPanelTab] = useState('run');
   const [run, setRun] = useState(null);
+  const [stepOpen, setStepOpen] = useState(false);
+  const [shotsOpen, setShotsOpen] = useState(false);
   const timer = useRef(null);
   const api = window.electronAPI;
 
@@ -77,7 +80,6 @@ export default function ScenarioScreen({
   const handleRun = async () => {
     if (run && run.running) return;
     setPanelOpen(true);
-    setPanelTab('run');
     setRun({ running: true, result: null, images: [] });
     try {
       const result = await api.natlRunScenario(`${workspacePath}/${relativePath}`, { headless: true });
@@ -107,15 +109,29 @@ export default function ScenarioScreen({
     }
   };
 
+  const shotCount = run && run.images ? run.images.length : 0;
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 1, borderBottom: '1px solid', borderColor: 'divider' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+          px: 1.5,
+          py: 1,
+          borderBottom: '1px solid',
+          borderColor: 'divider',
+          flexWrap: 'wrap',
+        }}
+      >
         <IconButton size="small" onClick={onBack} aria-label="Назад к списку">
           <ArrowBackIcon fontSize="small" />
         </IconButton>
-        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>{title}</Typography>
+        <Typography variant="subtitle1">{title}</Typography>
         <Chip size="small" label={relativePath} variant="outlined" />
         <Box sx={{ flex: 1 }} />
+
         {state && state.status === 'saving' && (
           <Typography variant="caption" sx={{ color: 'text.secondary' }}>Сохранение…</Typography>
         )}
@@ -127,6 +143,33 @@ export default function ScenarioScreen({
         {state && state.status === 'error' && (
           <Typography variant="caption" sx={{ color: 'error.main' }}>{state.message}</Typography>
         )}
+
+        <ToggleButtonGroup
+          size="small"
+          exclusive
+          value={mode}
+          onChange={(_, next) => next && setMode(next)}
+          aria-label="Вид сценария"
+        >
+          <ToggleButton value="human" sx={{ textTransform: 'none', px: 1.2 }}>Понятно</ToggleButton>
+          <ToggleButton value="yaml" sx={{ textTransform: 'none', px: 1.2 }}>YAML</ToggleButton>
+        </ToggleButtonGroup>
+
+        <Button size="small" startIcon={<AddIcon />} onClick={() => setStepOpen(true)}>
+          Добавить шаг
+        </Button>
+        <Tooltip title={shotCount ? 'Открыть скриншоты' : 'Скриншоты появятся после прогона'}>
+          <span>
+            <Button
+              size="small"
+              startIcon={<PhotoLibraryIcon />}
+              onClick={() => setShotsOpen(true)}
+              disabled={shotCount === 0}
+            >
+              Скриншоты{shotCount ? ` · ${shotCount}` : ''}
+            </Button>
+          </span>
+        </Tooltip>
         <Button
           variant="contained"
           size="small"
@@ -138,115 +181,80 @@ export default function ScenarioScreen({
         </Button>
       </Box>
 
-      <Box sx={{ display: 'flex', flex: 1, minHeight: 0 }}>
-        <Box sx={{ flex: 1, minWidth: 0, overflow: 'auto' }}>
+      <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+        {mode === 'yaml' ? (
           <YamlEditor value={text} dark={theme.palette.mode === 'dark'} onChange={setText} />
-        </Box>
+        ) : (
+          <ScenarioSteps text={text} />
+        )}
+      </Box>
 
-        <Paper
-          square
-          elevation={0}
-          sx={{
-            width: panelOpen ? 340 : 44,
-            flexShrink: 0,
-            borderLeft: '1px solid',
-            borderColor: 'divider',
-            display: 'flex',
-            flexDirection: 'column',
-            transition: 'width 120ms ease',
-            overflow: 'hidden',
-          }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid', borderColor: 'divider' }}>
-            <Tooltip title={panelOpen ? 'Свернуть панель' : 'Развернуть панель'}>
-              <IconButton
-                size="small"
-                onClick={() => setPanelOpen((prev) => !prev)}
-                aria-label={panelOpen ? 'Свернуть панель' : 'Развернуть панель'}
-                sx={{ m: 0.5 }}
-              >
-                {panelOpen ? <ChevronRightIcon fontSize="small" /> : <ChevronLeftIcon fontSize="small" />}
-              </IconButton>
-            </Tooltip>
-            {panelOpen && (
-              <Tabs
-                value={panelTab}
-                onChange={(_, next) => setPanelTab(next)}
-                variant="fullWidth"
-                sx={{ flex: 1, minHeight: 38 }}
-              >
-                <Tab value="build" label="Шаг" sx={{ minHeight: 38, textTransform: 'none' }} />
-                <Tab value="ai" label="ИИ" sx={{ minHeight: 38, textTransform: 'none' }} />
-                <Tab value="run" label="Прогон" sx={{ minHeight: 38, textTransform: 'none' }} />
-              </Tabs>
-            )}
-          </Box>
-
-          {panelOpen && (
-            <>
-              <Divider />
-              <Box sx={{ overflow: 'auto', flex: 1 }}>
-                {panelTab === 'build' && <StepBuilder text={text} onAppend={setText} />}
-                {panelTab === 'ai' && (
-                  <AiPanel text={text} onAppend={setText} onOpenSettings={onOpenSettings} />
-                )}
-                {panelTab === 'run' && <RunResult run={run} />}
-              </Box>
-            </>
+      <Box
+        sx={{
+          borderTop: '1px solid',
+          borderColor: 'divider',
+          flexShrink: 0,
+          bgcolor: 'background.paper',
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.5 }}>
+          <Typography variant="subtitle2" sx={{ flex: 1 }}>Отчёт</Typography>
+          {run && run.result && (
+            <Chip
+              size="small"
+              color={run.result.ok ? 'success' : 'error'}
+              label={`${run.result.ok ? 'Passed' : 'Failed'} · ${Math.round(run.result.durationMs || 0)} мс`}
+            />
           )}
-        </Paper>
-      </Box>
-    </Box>
-  );
-}
+          <IconButton
+            size="small"
+            onClick={() => setPanelOpen((prev) => !prev)}
+            aria-label={panelOpen ? 'Свернуть отчёт' : 'Развернуть отчёт'}
+          >
+            {panelOpen ? <ExpandMoreIcon fontSize="small" /> : <ExpandLessIcon fontSize="small" />}
+          </IconButton>
+        </Box>
 
-function RunResult({ run }) {
-  if (!run) {
-    return (
-      <Box sx={{ p: 1.5 }}>
-        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-          Прогонов ещё не было. Нажмите Run выше.
-        </Typography>
-      </Box>
-    );
-  }
-  return (
-    <Box sx={{ p: 1.5 }}>
-      {run.running && <Typography variant="body2">Выполняется…</Typography>}
-      {run.result && (
-        <Alert severity={run.result.ok ? 'success' : 'error'} sx={{ mb: 1.5 }}>
-          {run.result.ok ? 'Passed' : 'Failed'} in {Math.round(run.result.durationMs || 0)} ms
-          {run.result.error ? ` — ${run.result.error}` : ''}
-        </Alert>
-      )}
-      {run.result && (
-        <Box component="ol" sx={{ pl: 2, my: 1 }}>
-          {(run.result.steps || []).map((step, index) => (
-            <li key={`${index}-${step.name}`}>
-              <Typography variant="body2" sx={{ color: step.ok ? 'success.main' : 'error.main' }}>
-                {step.ok ? '✓' : '✗'} {step.name}{step.error ? ` — ${step.error}` : ''}
-              </Typography>
-            </li>
-          ))}
-        </Box>
-      )}
-      {run.images && run.images.length > 0 && (
-        <Box sx={{ display: 'grid', gap: 1 }}>
-          {run.images.map((image) => (
-            <Box key={image.key}>
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                {image.step} · {image.action} · {image.phase}
-              </Typography>
-              <Box
-                component="img"
-                src={image.src}
-                alt={`Шаг ${image.step}, ${image.phase}`}
-                sx={{ width: '100%', border: '1px solid', borderColor: 'divider', borderRadius: 1 }}
-              />
+        {panelOpen && (
+          <>
+            <Divider />
+            <Box sx={{ maxHeight: 220, overflow: 'auto', px: 1.5, py: 1 }}>
+              {!run && (
+                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                  Прогонов ещё не было. Нажмите Run — здесь появятся шаги и ошибки.
+                </Typography>
+              )}
+              {run && run.running && <Typography variant="body2">Выполняется…</Typography>}
+              {run && run.result && run.result.error && (
+                <Alert severity="error" sx={{ mb: 1 }}>{run.result.error}</Alert>
+              )}
+              {run && run.result && (
+                <Box component="ol" sx={{ pl: 2, my: 0 }}>
+                  {(run.result.steps || []).map((step, index) => (
+                    <li key={`${index}-${step.name}`}>
+                      <Typography variant="body2" sx={{ color: step.ok ? 'text.primary' : 'error.main' }}>
+                        {step.ok ? '✓' : '✗'} {step.name}{step.error ? ` — ${step.error}` : ''}
+                      </Typography>
+                    </li>
+                  ))}
+                </Box>
+              )}
             </Box>
-          ))}
-        </Box>
-      )}
+          </>
+        )}
+      </Box>
+
+      <StepDialog
+        open={stepOpen}
+        onClose={() => setStepOpen(false)}
+        text={text}
+        onAppend={setText}
+      />
+      <ScreenshotCarousel
+        open={shotsOpen}
+        onClose={() => setShotsOpen(false)}
+        images={run && run.images ? run.images : []}
+      />
     </Box>
   );
 }

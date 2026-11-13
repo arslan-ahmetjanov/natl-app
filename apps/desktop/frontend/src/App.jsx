@@ -16,22 +16,69 @@ const THEME_STORAGE_KEY = 'natl-theme';
 const sharedThemeComponents = {
   MuiButton: {
     styleOverrides: {
-      root: { textTransform: 'none' },
+      root: {
+        textTransform: 'none',
+        fontWeight: 600,
+        borderRadius: 10,
+        boxShadow: 'none',
+      },
     },
   },
   MuiPaper: {
     styleOverrides: {
       root: {
         backgroundImage: 'none',
+        borderRadius: 14,
+        border: '1px solid var(--natl-border, rgba(148,163,184,.25))',
+        boxShadow: 'none',
       },
     },
   },
   MuiListItemButton: {
     styleOverrides: {
       root: {
-        borderRadius: 8,
+        borderRadius: 10,
       },
     },
+  },
+  MuiTab: {
+    styleOverrides: {
+      root: {
+        textTransform: 'none',
+        fontWeight: 500,
+        minHeight: 38,
+      },
+    },
+  },
+  MuiTableCell: {
+    styleOverrides: {
+      root: { fontSize: 13, borderColor: 'inherit' },
+      head: {
+        fontSize: 11,
+        textTransform: 'uppercase',
+        letterSpacing: '0.08em',
+        fontWeight: 600,
+      },
+    },
+  },
+  MuiChip: {
+    styleOverrides: {
+      root: { borderRadius: 8, fontWeight: 500 },
+    },
+  },
+  MuiTooltip: {
+    styleOverrides: {
+      tooltip: { fontSize: 12, borderRadius: 6 },
+    },
+  },
+  MuiOutlinedInput: {
+    styleOverrides: {
+      root: { borderRadius: 10 },
+      input: { fontSize: 14 },
+    },
+  },
+  MuiInputLabel: {
+    styleOverrides: { root: { fontSize: 14 } },
   },
 };
 
@@ -43,15 +90,18 @@ const lightTheme = createTheme({
     success: { main: '#0D9488', dark: '#0F766E' },
     warning: { main: '#B45309' },
     error: { main: '#BE123C' },
-    background: { default: '#F8FAFC', paper: '#FFFFFF' },
+    background: { default: '#F1F5F9', paper: '#FFFFFF' },
     text: { primary: '#0F172A', secondary: '#64748B' },
     divider: '#E2E8F0',
   },
   typography: {
-    fontFamily: '"Golos Text", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    fontFamily: '"IBM Plex Sans", "Segoe UI", system-ui, sans-serif',
+    h6: { fontWeight: 600, letterSpacing: '-0.01em' },
+    subtitle1: { fontWeight: 600 },
+    subtitle2: { fontWeight: 600 },
   },
   shape: {
-    borderRadius: 8,
+    borderRadius: 10,
   },
   components: sharedThemeComponents,
 });
@@ -64,15 +114,18 @@ const darkTheme = createTheme({
     success: { main: '#14B8A6', dark: '#0D9488' },
     warning: { main: '#F59E0B' },
     error: { main: '#F43F5E' },
-    background: { default: '#0B1220', paper: '#0F172A' },
-    text: { primary: '#E2E8F0', secondary: '#94A3B8' },
-    divider: '#1E293B',
+    background: { default: '#0F172A', paper: '#1E293B' },
+    text: { primary: '#F1F5F9', secondary: '#94A3B8' },
+    divider: '#334155',
   },
   typography: {
-    fontFamily: '"Golos Text", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    fontFamily: '"IBM Plex Sans", "Segoe UI", system-ui, sans-serif',
+    h6: { fontWeight: 600, letterSpacing: '-0.01em' },
+    subtitle1: { fontWeight: 600 },
+    subtitle2: { fontWeight: 600 },
   },
   shape: {
-    borderRadius: 8,
+    borderRadius: 10,
   },
   components: sharedThemeComponents,
 });

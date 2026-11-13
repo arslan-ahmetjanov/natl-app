@@ -12,6 +12,7 @@ import {
   Typography,
 } from '@mui/material';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import BugReportIcon from '@mui/icons-material/BugReport';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -23,6 +24,7 @@ import LightModeIcon from '@mui/icons-material/LightMode';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LlmSettingsDialog from '../components/LlmSettingsDialog';
 import RecordScenarioDialog from '../components/RecordScenarioDialog';
+import AiChatScreen from './AiChatScreen';
 import LogsScreen from './LogsScreen';
 import ScenarioScreen from './ScenarioScreen';
 import ScenariosListScreen from './ScenariosListScreen';
@@ -147,6 +149,7 @@ export default function WorkspaceView({
               setSelected(null);
             })}
             {navItem(<BugReportIcon fontSize="small" />, 'Журнал', view === 'logs', () => setView('logs'))}
+            {navItem(<AutoAwesomeIcon fontSize="small" />, 'ИИ-агент', view === 'ai', () => setView('ai'))}
           </List>
 
           <Box sx={{ flex: 1 }} />
@@ -184,9 +187,9 @@ export default function WorkspaceView({
                 setView('scenarios');
                 setSelected(null);
               }}
-              onOpenSettings={() => setSettingsOpen(true)}
             />
           )}
+          {view === 'ai' && <AiChatScreen onOpenSettings={() => setSettingsOpen(true)} />}
           {view === 'logs' && <LogsScreen />}
         </Box>
       </Box>

@@ -12,6 +12,7 @@ const { runScenario, assertInsideWorkspace } = require('../natl/run');
 const { startRecording } = require('../natl/recorder');
 const { scenarioSummary } = require('../natl/scenario');
 const { generateSteps } = require('../natl/ai');
+const { chat } = require('../natl/agent-chat');
 const { getStore } = require('./logs');
 
 /** One recorder at a time: a second browser would fight the first for events. */
@@ -199,6 +200,26 @@ function registerNatlIpc() {
       return result;
     } catch (err) {
       getStore().error('ai', `генерация не удалась: ${err && err.message ? err.message : err}`, {
+        stack: err && err.stack,
+      });
+      throw err;
+    }
+  });
+
+  // Агент: чат с инструментами в пределах рабочей папки.
+  ipcMain.handle('ai:chat', async (_, payload = {}) => {
+    const root = currentRoot();
+    const details = llmConfig.getEffectiveConfigDetails(app.getPath('userData'), root);
+    const messages = Array.isArray(payload.messages) ? payload.messages : [];
+
+    try {
+      const result = await chat({ messages, root, config: details.values });
+      getStore().info('ai', `агент ответил, инструментов: ${result.calls.length}`, {
+        tools: result.calls.map((call) => call.name),
+      });
+      return result;
+    } catch (err) {
+      getStore().error('ai', `агент не ответил: ${err && err.message ? err.message : err}`, {
         stack: err && err.stack,
       });
       throw err;
