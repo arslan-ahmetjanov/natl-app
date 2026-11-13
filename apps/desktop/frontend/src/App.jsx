@@ -1,141 +1,134 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useEffect, useMemo, useState, lazy, Suspense } from 'react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { Box, CircularProgress, CssBaseline } from '@mui/material';
 import WelcomeScreen from './screens/WelcomeScreen';
+import { DEFAULT_BRAND, paletteFor } from './themes';
 
 // WorkspaceView тянет CodeMirror; грузим его отдельно, чтобы вход открывался сразу.
 const WorkspaceView = lazy(() => import('./screens/WorkspaceView'));
 
 const THEME_STORAGE_KEY = 'natl-theme';
+const BRAND_STORAGE_KEY = 'natl-brand';
 
-const sharedThemeComponents = {
-  MuiButton: {
-    styleOverrides: {
-      root: {
-        textTransform: 'none',
-        fontWeight: 600,
-        borderRadius: 10,
-        boxShadow: 'none',
+function brandComponents(palette) {
+  const radius = palette.radius;
+  return {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none',
+          fontWeight: 600,
+          borderRadius: Math.max(radius, 2),
+          boxShadow: 'none',
+        },
       },
     },
-  },
-  MuiPaper: {
-    styleOverrides: {
-      root: {
-        backgroundImage: 'none',
-        borderRadius: 14,
-        border: '1px solid var(--natl-border, rgba(148,163,184,.25))',
-        boxShadow: 'none',
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          backgroundImage: 'none',
+          borderRadius: typeof radius === 'number' ? radius * 1.6 + 4 : 10,
+          boxShadow: 'none',
+        },
       },
     },
-  },
-  MuiListItemButton: {
-    styleOverrides: {
-      root: { borderRadius: 10 },
+    MuiListItemButton: {
+      styleOverrides: { root: { borderRadius: Math.max(radius, 2) } },
     },
-  },
-  MuiTab: {
-    styleOverrides: {
-      root: { textTransform: 'none', fontWeight: 500, minHeight: 38 },
-    },
-  },
-  MuiTableCell: {
-    styleOverrides: {
-      root: { fontSize: 13, borderColor: 'inherit' },
-      head: {
-        fontSize: 11,
-        textTransform: 'uppercase',
-        letterSpacing: '0.08em',
-        fontWeight: 600,
+    MuiTab: {
+      styleOverrides: {
+        root: {
+          textTransform: palette.uppercaseLabels ? 'uppercase' : 'none',
+          letterSpacing: palette.uppercaseLabels ? '0.08em' : '0',
+          fontSize: 12,
+          fontWeight: 600,
+          minHeight: 38,
+        },
       },
     },
-  },
-  MuiChip: {
-    styleOverrides: {
-      root: { borderRadius: 8, fontWeight: 500 },
+    MuiTableCell: {
+      styleOverrides: {
+        root: { fontSize: 13, borderColor: 'inherit' },
+        head: {
+          fontSize: 11,
+          textTransform: 'uppercase',
+          letterSpacing: '0.08em',
+          fontWeight: 600,
+        },
+      },
     },
-  },
-  MuiTooltip: {
-    styleOverrides: {
-      tooltip: { fontSize: 12, borderRadius: 6 },
+    MuiChip: {
+      styleOverrides: { root: { borderRadius: Math.max(radius, 2), fontWeight: 500 } },
     },
-  },
-  MuiOutlinedInput: {
-    styleOverrides: {
-      root: { borderRadius: 10 },
-      input: { fontSize: 14 },
+    MuiTooltip: {
+      styleOverrides: { tooltip: { fontSize: 12, borderRadius: Math.max(radius, 2) } },
     },
-  },
-  MuiInputLabel: {
-    styleOverrides: { root: { fontSize: 14 } },
-  },
-};
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: { borderRadius: Math.max(radius + 2, 4) },
+        input: { fontSize: 14 },
+      },
+    },
+    MuiInputLabel: {
+      styleOverrides: { root: { fontSize: 14 } },
+    },
+  };
+}
 
-const lightTheme = createTheme({
-  palette: {
-    mode: 'light',
-    primary: { main: '#0D9488', dark: '#0F766E', light: '#14B8A6' },
-    secondary: { main: '#0F172A', dark: '#020617' },
-    success: { main: '#0D9488', dark: '#0F766E' },
-    warning: { main: '#B45309' },
-    error: { main: '#BE123C' },
-    background: { default: '#F1F5F9', paper: '#FFFFFF' },
-    text: { primary: '#0F172A', secondary: '#64748B' },
-    divider: '#E2E8F0',
-  },
-  typography: {
-    fontFamily: '"IBM Plex Sans", "Segoe UI", system-ui, sans-serif',
-    h6: { fontWeight: 600, letterSpacing: '-0.01em' },
-    subtitle1: { fontWeight: 600 },
-    subtitle2: { fontWeight: 600 },
-  },
-  shape: { borderRadius: 10 },
-  components: sharedThemeComponents,
-});
-
-const darkTheme = createTheme({
-  palette: {
-    mode: 'dark',
-    primary: { main: '#14B8A6', dark: '#0D9488', light: '#2DD4BF' },
-    secondary: { main: '#94A3B8', dark: '#64748B' },
-    success: { main: '#14B8A6', dark: '#0D9488' },
-    warning: { main: '#F59E0B' },
-    error: { main: '#F43F5E' },
-    background: { default: '#0F172A', paper: '#1E293B' },
-    text: { primary: '#F1F5F9', secondary: '#94A3B8' },
-    divider: '#334155',
-  },
-  typography: {
-    fontFamily: '"IBM Plex Sans", "Segoe UI", system-ui, sans-serif',
-    h6: { fontWeight: 600, letterSpacing: '-0.01em' },
-    subtitle1: { fontWeight: 600 },
-    subtitle2: { fontWeight: 600 },
-  },
-  shape: { borderRadius: 10 },
-  components: sharedThemeComponents,
-});
+function createNatlTheme(brandId, mode) {
+  const palette = paletteFor(brandId, mode);
+  return createTheme({
+    palette: {
+      mode,
+      primary: { main: palette.primary, dark: palette.primaryDark },
+      secondary: { main: palette.secondary },
+      success: { main: palette.success },
+      warning: { main: palette.warning },
+      error: { main: palette.error },
+      background: { default: palette.bg, paper: palette.paper },
+      text: { primary: palette.text, secondary: palette.muted },
+      divider: palette.divider,
+    },
+    typography: {
+      fontFamily: palette.body,
+      h4: { fontFamily: palette.heading, fontWeight: 600 },
+      h5: { fontFamily: palette.heading, fontWeight: 600 },
+      h6: { fontFamily: palette.heading, fontWeight: 600 },
+      subtitle1: { fontWeight: 600, fontFamily: palette.heading },
+      subtitle2: { fontWeight: 600, fontFamily: palette.heading },
+    },
+    shape: { borderRadius: palette.radius },
+    components: brandComponents(palette),
+  });
+}
 
 function getInitialThemeMode() {
-  if (typeof window === 'undefined') return 'light';
+  if (typeof window === 'undefined') return 'dark';
   const stored = localStorage.getItem(THEME_STORAGE_KEY);
   if (stored === 'light' || stored === 'dark') return stored;
-  return 'light';
+  return 'dark';
+}
+
+function getInitialBrand() {
+  if (typeof window === 'undefined') return DEFAULT_BRAND;
+  const stored = localStorage.getItem(BRAND_STORAGE_KEY);
+  return stored || DEFAULT_BRAND;
 }
 
 export default function App() {
   const [themeMode, setThemeMode] = useState(getInitialThemeMode);
+  const [brand, setBrand] = useState(getInitialBrand);
   const [workspacePath, setWorkspacePath] = useState(null);
   const [workspace, setWorkspace] = useState(null);
 
   const isElectron = typeof window !== 'undefined' && window.electronAPI;
-  const currentTheme = themeMode === 'dark' ? darkTheme : lightTheme;
+  const theme = useMemo(() => createNatlTheme(brand, themeMode), [brand, themeMode]);
 
   const handleToggleTheme = () => {
     setThemeMode((prev) => {
       const next = prev === 'dark' ? 'light' : 'dark';
       try {
         localStorage.setItem(THEME_STORAGE_KEY, next);
-        if (document.documentElement) document.documentElement.setAttribute('data-theme', next);
       } catch {
         /* тема не критична */
       }
@@ -143,9 +136,21 @@ export default function App() {
     });
   };
 
+  const handleBrandChange = (next) => {
+    setBrand(next);
+    try {
+      localStorage.setItem(BRAND_STORAGE_KEY, next);
+    } catch {
+      /* бренд не критичен */
+    }
+  };
+
   useEffect(() => {
-    if (document.documentElement) document.documentElement.setAttribute('data-theme', themeMode);
-  }, [themeMode]);
+    if (document.documentElement) {
+      document.documentElement.setAttribute('data-theme', themeMode);
+      document.documentElement.setAttribute('data-brand', brand);
+    }
+  }, [themeMode, brand]);
 
   useEffect(() => {
     if (!isElectron) return;
@@ -177,9 +182,9 @@ export default function App() {
 
   if (!isElectron) {
     return (
-      <ThemeProvider theme={currentTheme}>
+      <ThemeProvider theme={theme}>
         <CssBaseline />
-        <div style={{ padding: 24, fontFamily: 'sans-serif' }}>
+        <div style={{ padding: 24 }}>
           Приложение работает только внутри Electron: запустите `npm start`.
         </div>
       </ThemeProvider>
@@ -187,13 +192,15 @@ export default function App() {
   }
 
   return (
-    <ThemeProvider theme={currentTheme}>
+    <ThemeProvider theme={theme}>
       <CssBaseline />
       {!workspacePath ? (
         <WelcomeScreen
           onOpen={handleOpenFolder}
           themeMode={themeMode}
           onToggleTheme={handleToggleTheme}
+          brand={brand}
+          onBrandChange={handleBrandChange}
         />
       ) : (
         <Suspense
@@ -208,6 +215,8 @@ export default function App() {
             workspace={workspace}
             themeMode={themeMode}
             onToggleTheme={handleToggleTheme}
+            brand={brand}
+            onBrandChange={handleBrandChange}
             onRefresh={() => window.electronAPI.getWorkspaceMeta().then(setWorkspace)}
             onOpenFolder={handleOpenFolder}
             onCloseWorkspace={handleCloseWorkspace}

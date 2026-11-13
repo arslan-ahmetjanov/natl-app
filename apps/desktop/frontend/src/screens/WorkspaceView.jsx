@@ -27,6 +27,7 @@ import LightModeIcon from '@mui/icons-material/LightMode';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LlmSettingsDialog from '../components/LlmSettingsDialog';
 import OnboardingDialog from '../components/OnboardingDialog';
+import BrandSwitcher from '../components/BrandSwitcher';
 import RecordScenarioDialog from '../components/RecordScenarioDialog';
 import WindowControls from '../components/WindowControls';
 import AiChatScreen from './AiChatScreen';
@@ -52,6 +53,8 @@ export default function WorkspaceView({
   workspace,
   themeMode,
   onToggleTheme,
+  brand,
+  onBrandChange,
   onRefresh,
   onOpenFolder,
   onCloseWorkspace,
@@ -120,6 +123,7 @@ export default function WorkspaceView({
                 <SettingsIcon fontSize="small" />
               </IconButton>
             </Tooltip>
+            {onBrandChange && <BrandSwitcher brand={brand} onChange={onBrandChange} />}
             {onToggleTheme && (
               <Tooltip title={themeMode === 'dark' ? 'Светлая тема' : 'Тёмная тема'}>
                 <IconButton size="small" onClick={onToggleTheme} aria-label="Переключить тему">

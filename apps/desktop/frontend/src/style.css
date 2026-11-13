@@ -19,13 +19,58 @@ code, pre, .mono {
   font-family: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
 }
 
-/* тонкие скроллбары в стиле документации */
+/* тонкие скроллбары */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.45); border-radius: 8px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.7); }
 ::-webkit-scrollbar-corner { background: transparent; }
 
-/* подсветка активной строки в редакторе не должна спорить с темой */
+/* подсветка редактора не должна спорить с темой */
 .cm-editor { background: transparent !important; }
 .cm-editor .cm-gutters { background: transparent !important; color: #64748b; }
+
+/* ---------------------------------------------------------------
+   Миры: эффекты поверхностей. Меняются вместе с data-brand.
+   --------------------------------------------------------------- */
+
+/* Полигон: техническая разметка по краю рабочей области */
+html[data-brand="range"] .MuiPaper-root {
+  border-color: rgba(255, 107, 26, 0.22);
+}
+
+/* Предполётный: тонкая линия «табло» под шапкой */
+html[data-brand="preflight"] body {
+  background-image: linear-gradient(180deg, rgba(255, 176, 32, 0.06), transparent 30%);
+}
+
+/* Фосфор: сканлайны поверх всего, очень тихие */
+html[data-brand="phosphor"] body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(57, 255, 136, 0.05) 0,
+    rgba(57, 255, 136, 0.05) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  mix-blend-mode: screen;
+}
+
+/* Глитч: сдвиг каналов у заголовков */
+html[data-brand="glitch"] h4,
+html[data-brand="glitch"] h5,
+html[data-brand="glitch"] h6 {
+  text-shadow: 2px 0 rgba(255, 46, 136, 0.35), -2px 0 rgba(34, 211, 238, 0.35);
+}
+
+/* Лаборатория: бумажная фактура */
+html[data-brand="lab"] body {
+  background-image:
+    repeating-linear-gradient(0deg, rgba(27, 42, 65, 0.035) 0 1px, transparent 1px 4px),
+    radial-gradient(800px 300px at 20% 0%, rgba(179, 57, 46, 0.05), transparent 60%);
+}
